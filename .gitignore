@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+*/build/
+.kotlin/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+.navigation/
+
+# Configuración local (SDK, URL de la API, claves): nunca se sube
+local.properties
+*.keystore
+*.jks
+google-services.json
+
+# Artefactos
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# Logs y SO
+*.log
+.DS_Store
