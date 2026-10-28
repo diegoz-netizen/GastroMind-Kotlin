@@ -61,7 +61,7 @@ com.gastromind.app/
    - **Tablet real (cocina):** `gastromind.apiUrl=http://<IP de la PC>:8080/`, en la misma red.
 3. Cuentas demo (`docs/seed_demo.sql` del repo Spring): `cocina.central@gastromind.demo`, `mozo.central@gastromind.demo`, `almacen.central@gastromind.demo` con PIN **1234** o contraseña `Demo2026!`.
 
-Por línea de comandos (con el JDK de Android Studio):
+El CI (GitHub Actions, `.github/workflows/ci.yml`) corre lo mismo en cada push a `feature/**` y en cada PR a `main`. Por línea de comandos (con el JDK de Android Studio):
 
 ```bash
 ./gradlew :app:testDebugUnitTest :app:assembleDebug
