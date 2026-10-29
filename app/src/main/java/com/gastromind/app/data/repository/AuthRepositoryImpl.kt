@@ -20,14 +20,17 @@ class AuthRepositoryImpl(
     override val recordado: Flow<EmpleadoRecordado?> = sesionStore.recordado
 
     override suspend fun entrarConPin(correo: String, pin: String): Resultado<Sesion> =
-        entrar { api.loginPin(LoginPinRequest(correo.trim(), pin)) }
+        entrar { api.loginPin(LoginPinRequest(normalizar(correo), pin)) }
 
     override suspend fun entrarConCorreo(correo: String, password: String): Resultado<Sesion> =
-        entrar { api.login(LoginRequest(correo.trim(), password)) }
+        entrar { api.login(LoginRequest(normalizar(correo), password)) }
 
     override suspend fun cerrarSesion() = sesionStore.cerrar()
 
     override suspend fun olvidarEmpleado() = sesionStore.olvidarEmpleado()
+
+    // El backend busca el correo tal cual y los guarda en minúsculas: "Mozo.Central@…" daría 401 (revisión de Victor)
+    private fun normalizar(correo: String) = correo.trim().lowercase()
 
     private suspend fun entrar(llamada: suspend () -> AuthResponse): Resultado<Sesion> = try {
         val r = llamada()
