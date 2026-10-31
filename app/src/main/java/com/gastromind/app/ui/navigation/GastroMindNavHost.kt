@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.gastromind.app.data.session.EstadoSesion
 import com.gastromind.app.data.session.Rol
 import com.gastromind.app.data.session.SesionStore
+import com.gastromind.app.ui.almacen.AlmacenRoute
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.login.LoginRoute
 import com.gastromind.app.ui.rol.InicioRolRoute
@@ -51,7 +52,10 @@ fun GastroMindNavHost(sesionStore: SesionStore) {
 
     NavHost(navController = nav, startDestination = destino) {
         composable(Rutas.LOGIN) { LoginRoute() }
-        listOf(Rutas.MOZO, Rutas.COCINA, Rutas.ALMACEN, Rutas.SIN_APP).forEach { ruta ->
+        composable(Rutas.ALMACEN) {
+            (estado as? EstadoSesion.Activa)?.let { AlmacenRoute(sesion = it.sesion) }
+        }
+        listOf(Rutas.MOZO, Rutas.COCINA, Rutas.SIN_APP).forEach { ruta ->
             composable(ruta) {
                 (estado as? EstadoSesion.Activa)?.let { InicioRolRoute(sesion = it.sesion) }
             }
