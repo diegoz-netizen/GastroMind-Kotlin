@@ -8,14 +8,17 @@ plugins {
 
 // URL del backend Spring. Por defecto, el emulador (10.0.2.2 = localhost de la PC).
 // En una tablet real: gastromind.apiUrl=http://<IP de la PC>:8080/ en local.properties o en gradle.properties del usuario.
-val apiUrl: String = run {
+val propiedadesLocales = Properties().apply {
     val local = rootProject.file("local.properties")
-    val props = Properties()
-    if (local.exists()) local.inputStream().use { props.load(it) }
-    props.getProperty("gastromind.apiUrl")
-        ?: providers.gradleProperty("gastromind.apiUrl").orNull
-        ?: "http://10.0.2.2:8080/"
+    if (local.exists()) local.inputStream().use { load(it) }
 }
+val apiUrl: String = propiedadesLocales.getProperty("gastromind.apiUrl")
+    ?: providers.gradleProperty("gastromind.apiUrl").orNull
+    ?: "http://10.0.2.2:8080/"
+// URL del backend Django (kardex, HU-15). Se configura igual: gastromind.djangoUrl=http://<IP de la PC>:8000/
+val djangoUrl: String = propiedadesLocales.getProperty("gastromind.djangoUrl")
+    ?: providers.gradleProperty("gastromind.djangoUrl").orNull
+    ?: "http://10.0.2.2:8000/"
 
 android {
     namespace = "com.gastromind.app"
@@ -30,6 +33,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("String", "API_URL", "\"$apiUrl\"")
+        buildConfigField("String", "DJANGO_URL", "\"$djangoUrl\"")
     }
 
     compileOptions {
