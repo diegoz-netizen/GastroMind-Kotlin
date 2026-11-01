@@ -1,6 +1,7 @@
 package com.gastromind.app.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,7 +16,12 @@ import androidx.compose.runtime.Composable
 /** Barra de todas las pantallas de rol: qué sección es, quién está y cerrar sesión. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarraSuperior(titulo: String, subtitulo: String, onCerrarSesion: () -> Unit) {
+fun BarraSuperior(
+    titulo: String,
+    subtitulo: String,
+    onCerrarSesion: () -> Unit,
+    acciones: @Composable RowScope.() -> Unit = {}
+) {
     TopAppBar(
         title = {
             Column {
@@ -24,6 +30,7 @@ fun BarraSuperior(titulo: String, subtitulo: String, onCerrarSesion: () -> Unit)
             }
         },
         actions = {
+            acciones()
             IconButton(onClick = onCerrarSesion) {
                 Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = "Cerrar sesión")
             }

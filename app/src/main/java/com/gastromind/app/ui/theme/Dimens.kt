@@ -18,4 +18,9 @@ object Dimens {
     /** En tablet (cocina) el formulario no se estira a todo el ancho. */
     val anchoFormulario = 420.dp
     val anchoContenido = 640.dp
+    /** Cuatro comandas por fila en la tablet de cocina, una en el teléfono. */
+    val anchoComanda = 260.dp
+    val altoBotonEstado = 48.dp
+    val borde = 1.dp
+    val bordeDestacado = 2.dp
 }

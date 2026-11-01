@@ -6,6 +6,8 @@ import com.gastromind.app.data.remote.AuthInterceptor
 import com.gastromind.app.data.remote.GastroMindApi
 import com.gastromind.app.data.repository.AuthRepository
 import com.gastromind.app.data.repository.AuthRepositoryImpl
+import com.gastromind.app.data.repository.PedidoRepository
+import com.gastromind.app.data.repository.PedidoRepositoryImpl
 import com.gastromind.app.data.session.SesionStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -44,4 +46,5 @@ class AppContainer(context: Context) {
         .create(GastroMindApi::class.java)
 
     val authRepository: AuthRepository = AuthRepositoryImpl(api, sesionStore)
+    val pedidoRepository: PedidoRepository = PedidoRepositoryImpl(api)
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import com.gastromind.app.ui.theme.Dimens
@@ -85,10 +86,14 @@ fun EstadoVacio(
 
 /** Chip pequeño de estado (ámbar), como "Propuesta" o "En construcción" en el prototipo. */
 @Composable
-fun EtiquetaEstado(texto: String) {
+fun EtiquetaEstado(
+    texto: String,
+    color: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
+) {
     Surface(
-        color = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        color = color,
+        contentColor = contentColor,
         shape = MaterialTheme.shapes.small
     ) {
         Text(texto, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.xs))
