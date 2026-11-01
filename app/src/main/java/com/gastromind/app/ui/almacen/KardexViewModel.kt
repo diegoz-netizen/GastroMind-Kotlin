@@ -68,8 +68,14 @@ class KardexViewModel(private val repo: KardexRepository) : ViewModel() {
         _uiState.update { it.copy(cargandoMovimientos = true, error = null) }
         consulta = viewModelScope.launch {
             when (val r = repo.kardex(insumoId, s.desde, s.hasta)) {
-                is Resultado.Exito -> _uiState.update {
-                    it.copy(cargandoMovimientos = false, movimientos = r.valor.movimientos)
+                is Resultado.Exito -> _uiState.update { estado ->
+                    // El kardex trae el stock del momento: el selector muestra el mismo dato que la tabla
+                    val actual = r.valor.insumo
+                    estado.copy(
+                        cargandoMovimientos = false,
+                        movimientos = r.valor.movimientos,
+                        insumos = estado.insumos.map { if (it.id == actual.id) actual else it }
+                    )
                 }
                 is Resultado.Error -> _uiState.update {
                     it.copy(cargandoMovimientos = false, movimientos = emptyList(), error = r.mensaje)

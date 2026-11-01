@@ -63,6 +63,16 @@ class KardexViewModelTest {
     }
 
     @Test
+    fun alConsultar_ElSelectorMuestraElStockQueTraeElKardex() {
+        val vm = vm()
+        repo.insumoEnKardex = repo.arroz.copy(stockActual = BigDecimal("24.800"))
+
+        vm.onInsumo(5)
+
+        assertEquals(BigDecimal("24.800"), vm.uiState.value.insumo?.stockActual)
+    }
+
+    @Test
     fun lasFechas_FiltranYSePuedenQuitar() {
         val vm = vm()
         vm.onInsumo(5)
