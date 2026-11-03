@@ -2,6 +2,9 @@ package com.gastromind.app.data.remote
 
 import com.gastromind.app.data.remote.dto.AuthResponse
 import com.gastromind.app.data.remote.dto.CambioEstadoRequest
+import com.gastromind.app.data.remote.dto.CompraOpcionesResponse
+import com.gastromind.app.data.remote.dto.IngresoCompraRequest
+import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
 import com.gastromind.app.data.remote.dto.LoginRequest
 import com.gastromind.app.data.remote.dto.PedidoResponse
@@ -33,4 +36,12 @@ interface GastroMindApi {
         @Path("detalleId") detalleId: Long,
         @Body request: CambioEstadoRequest
     ): PedidoResponse
+
+    /** HU-14: proveedores e insumos del restaurante para el formulario. */
+    @GET("api/compras/opciones")
+    suspend fun opcionesDeCompra(): CompraOpcionesResponse
+
+    /** HU-14: registra la compra y sube el stock. */
+    @POST("api/compras")
+    suspend fun registrarIngreso(@Body request: IngresoCompraRequest): IngresoCompraResponse
 }

@@ -3,9 +3,14 @@ package com.gastromind.app.di
 import android.content.Context
 import com.gastromind.app.BuildConfig
 import com.gastromind.app.data.remote.AuthInterceptor
+import com.gastromind.app.data.remote.DjangoApi
 import com.gastromind.app.data.remote.GastroMindApi
 import com.gastromind.app.data.repository.AuthRepository
 import com.gastromind.app.data.repository.AuthRepositoryImpl
+import com.gastromind.app.data.repository.CompraRepository
+import com.gastromind.app.data.repository.CompraRepositoryImpl
+import com.gastromind.app.data.repository.KardexRepository
+import com.gastromind.app.data.repository.KardexRepositoryImpl
 import com.gastromind.app.data.repository.PedidoRepository
 import com.gastromind.app.data.repository.PedidoRepositoryImpl
 import com.gastromind.app.data.session.SesionStore
@@ -45,6 +50,16 @@ class AppContainer(context: Context) {
         .build()
         .create(GastroMindApi::class.java)
 
+    // Mismo cliente HTTP: Django acepta el JWT que emite Spring
+    private val djangoApi: DjangoApi = Retrofit.Builder()
+        .baseUrl(BuildConfig.DJANGO_URL)
+        .client(okHttp)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(DjangoApi::class.java)
+
     val authRepository: AuthRepository = AuthRepositoryImpl(api, sesionStore)
     val pedidoRepository: PedidoRepository = PedidoRepositoryImpl(api)
+    val compraRepository: CompraRepository = CompraRepositoryImpl(api)
+    val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
 }
