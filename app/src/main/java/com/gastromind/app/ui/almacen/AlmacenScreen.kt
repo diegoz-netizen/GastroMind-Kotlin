@@ -12,14 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,7 +39,6 @@ import com.gastromind.app.ui.components.BotonPrincipal
 import com.gastromind.app.ui.components.CampoFecha
 import com.gastromind.app.ui.components.CampoSeleccion
 import com.gastromind.app.ui.components.CampoTexto
-import com.gastromind.app.ui.components.EstadoVacio
 import com.gastromind.app.ui.components.MensajeError
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.components.Pestanas
@@ -52,16 +50,24 @@ import java.math.BigDecimal
 import java.time.LocalDate
 
 private const val PESTANA_INGRESO = 0
+private const val PESTANA_KARDEX = 1
 private val PESTANAS = listOf("Ingreso", "Kardex")
 
 @Composable
 fun AlmacenRoute(
     sesion: Sesion,
     inicioVm: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory),
-    ingresoVm: IngresoCompraViewModel = viewModel(factory = IngresoCompraViewModel.Factory)
+    ingresoVm: IngresoCompraViewModel = viewModel(factory = IngresoCompraViewModel.Factory),
+    kardexVm: KardexViewModel = viewModel(factory = KardexViewModel.Factory)
 ) {
     val estado by ingresoVm.uiState.collectAsStateWithLifecycle()
+    val kardex by kardexVm.uiState.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(PESTANA_INGRESO) }
+
+    // Cada vez que se abre: una compra recién registrada ya tiene que verse en el kardex
+    LaunchedEffect(pestana) {
+        if (pestana == PESTANA_KARDEX) kardexVm.actualizar()
+    }
 
     AlmacenScreen(
         sesion = sesion,
@@ -76,7 +82,12 @@ fun AlmacenRoute(
         onCostoTotal = ingresoVm::onCostoTotal,
         onLote = ingresoVm::onLote,
         onVencimiento = ingresoVm::onVencimiento,
-        onRegistrar = ingresoVm::registrar
+        onRegistrar = ingresoVm::registrar,
+        kardex = kardex,
+        onReintentarKardex = kardexVm::actualizar,
+        onInsumoKardex = kardexVm::onInsumo,
+        onDesde = kardexVm::onDesde,
+        onHasta = kardexVm::onHasta
     )
 }
 
@@ -94,7 +105,12 @@ fun AlmacenScreen(
     onCostoTotal: (String) -> Unit,
     onLote: (String) -> Unit,
     onVencimiento: (LocalDate?) -> Unit,
-    onRegistrar: () -> Unit
+    onRegistrar: () -> Unit,
+    kardex: KardexUiState,
+    onReintentarKardex: () -> Unit,
+    onInsumoKardex: (Long) -> Unit,
+    onDesde: (LocalDate?) -> Unit,
+    onHasta: (LocalDate?) -> Unit
 ) {
     val formularioListo = pestana == PESTANA_INGRESO && !estado.cargando && estado.errorCarga == null
     Scaffold(
@@ -126,12 +142,7 @@ fun AlmacenScreen(
                         estado, onReintentar, onProveedor, onInsumo, onCantidad, onCostoTotal, onLote, onVencimiento
                     )
                 } else {
-                    EstadoVacio(
-                        icono = Icons.Outlined.Inventory2,
-                        titulo = "Kardex",
-                        texto = "Aquí se consultan los movimientos de cada insumo.",
-                        etiqueta = "En construcción · HU-15"
-                    )
+                    KardexPestana(kardex, onReintentarKardex, onInsumoKardex, onDesde, onHasta)
                 }
             }
         }
@@ -267,7 +278,12 @@ private fun AlmacenPreview() {
             onCostoTotal = {},
             onLote = {},
             onVencimiento = {},
-            onRegistrar = {}
+            onRegistrar = {},
+            kardex = KardexUiState(),
+            onReintentarKardex = {},
+            onInsumoKardex = {},
+            onDesde = {},
+            onHasta = {}
         )
     }
 }

@@ -46,7 +46,7 @@ com.gastromind.app/
 | Inicio del mozo (Salón) | HU-09, HU-12 · Piero | Pantalla vacía para empezar |
 | Inicio de cocina | HU-10, HU-11 · Diego | Pantalla vacía para empezar |
 | Almacén: pestaña Ingreso | HU-14 · Victor | ✅ Necesita `/api/compras` (Spring #36) |
-| Almacén: pestaña Kardex | HU-15 · Victor | En construcción |
+| Almacén: pestaña Kardex | HU-15 · Victor | ✅ Necesita el kardex de Django (Django #18) |
 | Administrador | — | "Usa la web" (la app es para el personal operativo) |
 
 | Login con PIN | PIN incorrecto | Empleado recordado | Correo y contraseña | Cocina | Salón |
@@ -60,6 +60,7 @@ com.gastromind.app/
    - **URL de la API:** por defecto `http://10.0.2.2:8080/` (la PC vista desde el emulador). Se cambia con `gastromind.apiUrl=…` en `local.properties` (no se sube).
    - Si el emulador no llega a `10.0.2.2` (pasó en Windows), usar el puerto de la PC con `adb reverse tcp:8080 tcp:8080` y `gastromind.apiUrl=http://localhost:8080/`.
    - **Tablet real (cocina):** `gastromind.apiUrl=http://<IP de la PC>:8080/`, en la misma red.
+   - **Kardex (HU-15):** además, Django corriendo en la PC (`http://localhost:8000`), con `10.0.2.2` en `DJANGO_ALLOWED_HOSTS` (si no, responde 400). Por defecto la app usa `http://10.0.2.2:8000/`; se cambia con `gastromind.djangoUrl=…` en `local.properties`.
 3. Cuentas demo (`docs/seed_demo.sql` del repo Spring): `cocina.central@gastromind.demo`, `mozo.central@gastromind.demo`, `almacen.central@gastromind.demo` con PIN **1234** o contraseña `Demo2026!`.
 
 El CI (GitHub Actions, `.github/workflows/ci.yml`) corre lo mismo en cada push a `feature/**` y en cada PR a `main`. Por línea de comandos (con el JDK de Android Studio):
