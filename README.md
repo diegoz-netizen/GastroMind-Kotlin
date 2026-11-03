@@ -82,7 +82,7 @@ Sale del **prototipo final** del equipo (Figma, 27/10). Está todo en `ui/theme`
 | Formas | Esquinas sutiles: 8 / 12 / 16 dp |
 | Tipografía | Fuente del sistema; **cifras en monoespaciada** (PIN, cantidades, montos), como el prototipo |
 | Imágenes | Íconos del dominio por rol; el personal se muestra con sus iniciales (no hay fotos) |
-| Tema | Solo claro y sin color dinámico. El KDS oscuro del prototipo se suma con la HU-10 |
+| Tema | Claro y sin color dinámico. La cocina usa el esquema oscuro del KDS (`GastroMindCocinaTheme`) con los mismos roles de color |
 
 En las pantallas: `MaterialTheme.colorScheme.*`, `MaterialTheme.typography.*`, `MaterialTheme.shapes.*` y `Dimens.*`. Si dos pantallas dibujan lo mismo, va a `ui/components`.
 

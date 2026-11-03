@@ -11,9 +11,12 @@ import com.gastromind.app.data.session.EstadoSesion
 import com.gastromind.app.data.session.Rol
 import com.gastromind.app.data.session.SesionStore
 import com.gastromind.app.ui.almacen.AlmacenRoute
+import com.gastromind.app.ui.cocina.ComandaRoute
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.login.LoginRoute
+import com.gastromind.app.ui.mozo.EnCocinaRoute
 import com.gastromind.app.ui.rol.InicioRolRoute
+import com.gastromind.app.ui.theme.GastroMindCocinaTheme
 
 /** Rutas de la app. Cada HU agrega las suyas dentro de su rol (p. ej. "mozo/pedido/{mesaId}"). */
 object Rutas {
@@ -52,10 +55,16 @@ fun GastroMindNavHost(sesionStore: SesionStore) {
 
     NavHost(navController = nav, startDestination = destino) {
         composable(Rutas.LOGIN) { LoginRoute() }
+        composable(Rutas.COCINA) {
+            (estado as? EstadoSesion.Activa)?.let { GastroMindCocinaTheme { ComandaRoute(sesion = it.sesion) } }
+        }
+        composable(Rutas.MOZO) {
+            (estado as? EstadoSesion.Activa)?.let { EnCocinaRoute(sesion = it.sesion) }
+        }
         composable(Rutas.ALMACEN) {
             (estado as? EstadoSesion.Activa)?.let { AlmacenRoute(sesion = it.sesion) }
         }
-        listOf(Rutas.MOZO, Rutas.COCINA, Rutas.SIN_APP).forEach { ruta ->
+        listOf(Rutas.SIN_APP).forEach { ruta ->
             composable(ruta) {
                 (estado as? EstadoSesion.Activa)?.let { InicioRolRoute(sesion = it.sesion) }
             }
