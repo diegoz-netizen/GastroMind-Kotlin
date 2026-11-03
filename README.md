@@ -45,7 +45,8 @@ com.gastromind.app/
 | Ingreso con correo y contraseña | HU-02 | ✅ |
 | Inicio del mozo (Salón) | HU-09, HU-12 · Piero | Pantalla vacía para empezar |
 | Inicio de cocina | HU-10, HU-11 · Diego | Pantalla vacía para empezar |
-| Inicio del almacén | HU-14, HU-15 · Victor | Pantalla vacía para empezar |
+| Almacén: pestaña Ingreso | HU-14 · Victor | ✅ Necesita `/api/compras` (Spring #36) |
+| Almacén: pestaña Kardex | HU-15 · Victor | En construcción |
 | Administrador | — | "Usa la web" (la app es para el personal operativo) |
 
 | Login con PIN | PIN incorrecto | Empleado recordado | Correo y contraseña | Cocina | Salón |

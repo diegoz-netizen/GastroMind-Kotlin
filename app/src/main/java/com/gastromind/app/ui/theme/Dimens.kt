@@ -11,6 +11,7 @@ object Dimens {
     val xxl = 32.dp
 
     val altoBoton = 52.dp
+    val altoPestana = 44.dp
     val avatar = 56.dp
     val iconoGrande = 64.dp
     val teclaPin = 72.dp
