@@ -1,12 +1,15 @@
 package com.gastromind.app.data.remote
 
+import com.gastromind.app.data.remote.dto.AgregarPlatillosRequest
 import com.gastromind.app.data.remote.dto.AuthResponse
 import com.gastromind.app.data.remote.dto.CambioEstadoRequest
 import com.gastromind.app.data.remote.dto.CompraOpcionesResponse
+import com.gastromind.app.data.remote.dto.CrearPedidoRequest
 import com.gastromind.app.data.remote.dto.IngresoCompraRequest
 import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
 import com.gastromind.app.data.remote.dto.LoginRequest
+import com.gastromind.app.data.remote.dto.MesaDto
 import com.gastromind.app.data.remote.dto.PedidoResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -24,6 +27,21 @@ interface GastroMindApi {
     /** HU-27: correo y PIN de 4 dígitos. Mismo JWT que el login web. */
     @POST("api/auth/login-pin")
     suspend fun loginPin(@Body request: LoginPinRequest): AuthResponse
+
+    /** HU-09: mesas del restaurante, libres u ocupadas. */
+    @GET("api/mesas")
+    suspend fun mesas(): List<MesaDto>
+
+    /** HU-09 (CA-09): pedido nuevo en una mesa libre; la mesa queda ocupada. */
+    @POST("api/pedidos")
+    suspend fun crearPedido(@Body request: CrearPedidoRequest): PedidoResponse
+
+    /** HU-09, segunda ronda: platillos nuevos en el pedido abierto de la mesa. */
+    @POST("api/pedidos/{pedidoId}/detalles")
+    suspend fun agregarPlatillos(
+        @Path("pedidoId") pedidoId: Long,
+        @Body request: AgregarPlatillosRequest
+    ): PedidoResponse
 
     /** HU-10: pedidos sin cerrar del restaurante, del más antiguo al más nuevo. */
     @GET("api/pedidos")

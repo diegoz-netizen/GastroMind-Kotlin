@@ -43,7 +43,9 @@ com.gastromind.app/
 |---|---|---|
 | Ingreso con correo y PIN de 4 dígitos | HU-27 | ✅ El último empleado queda recordado: la próxima vez solo se pide el PIN |
 | Ingreso con correo y contraseña | HU-02 | ✅ |
-| Inicio del mozo (Salón) | HU-09, HU-12 · Piero | Pantalla vacía para empezar |
+| Salón del mozo: mesas, pedido y segunda ronda | HU-09 · Victor (cubre a Piero) | ✅ Necesita `/api/mesas`, `/api/pedidos` y `/api/pedidos/{id}/detalles` (Spring) y la carta de Django |
+| Salón del mozo: pestaña En cocina | HU-11 · Diego | ✅ |
+| Cerrar la mesa | HU-12 · Piero | Por hacer |
 | Inicio de cocina | HU-10, HU-11 · Diego | Pantalla vacía para empezar |
 | Almacén: pestaña Ingreso | HU-14 · Victor | ✅ Necesita `/api/compras` (Spring #36) |
 | Almacén: pestaña Kardex | HU-15 · Victor | ✅ Necesita el kardex de Django (Django #18) |
