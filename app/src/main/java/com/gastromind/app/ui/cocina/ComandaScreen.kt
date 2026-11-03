@@ -79,7 +79,7 @@ fun ComandaScreen(
         topBar = {
             BarraSuperior(
                 titulo = "Cocina",
-                subtitulo = "$nombre · ${estado.comandas.size} comandas · ${estado.totalPlatillos} platillos",
+                subtitulo = "$nombre · ${conteo(estado.comandas.size, "comanda")} · ${conteo(estado.totalPlatillos, "platillo")}",
                 onCerrarSesion = onCerrarSesion,
                 acciones = {
                     estado.ahora?.let {
@@ -226,3 +226,5 @@ private fun ComandaPreview() {
         )
     }
 }
+
+private fun conteo(n: Int, nombre: String) = if (n == 1) "1 $nombre" else "$n ${nombre}s"
