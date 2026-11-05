@@ -6,6 +6,9 @@ import com.gastromind.app.data.remote.dto.IngresoCompraRequest
 import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
 import com.gastromind.app.data.remote.dto.LoginRequest
+import com.gastromind.app.data.remote.dto.MesaDto
+import com.gastromind.app.data.remote.dto.PedidoCreado
+import com.gastromind.app.data.remote.dto.PedidoRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -28,4 +31,12 @@ interface GastroMindApi {
     /** HU-14: registra la compra y sube el stock. */
     @POST("api/compras")
     suspend fun registrarIngreso(@Body request: IngresoCompraRequest): IngresoCompraResponse
+
+    /** HU-09: mesas del restaurante del token (LIBRE u OCUPADA). */
+    @GET("api/mesas")
+    suspend fun mesas(): List<MesaDto>
+
+    /** HU-09: crea el pedido de una mesa libre y la deja OCUPADA. */
+    @POST("api/pedidos")
+    suspend fun crearPedido(@Body request: PedidoRequest): PedidoCreado
 }

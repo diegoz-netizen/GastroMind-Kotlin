@@ -11,6 +11,8 @@ import com.gastromind.app.data.repository.CompraRepository
 import com.gastromind.app.data.repository.CompraRepositoryImpl
 import com.gastromind.app.data.repository.KardexRepository
 import com.gastromind.app.data.repository.KardexRepositoryImpl
+import com.gastromind.app.data.repository.PedidoRepository
+import com.gastromind.app.data.repository.PedidoRepositoryImpl
 import com.gastromind.app.data.session.SesionStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -59,4 +61,5 @@ class AppContainer(context: Context) {
     val authRepository: AuthRepository = AuthRepositoryImpl(api, sesionStore)
     val compraRepository: CompraRepository = CompraRepositoryImpl(api)
     val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
+    val pedidoRepository: PedidoRepository = PedidoRepositoryImpl(api, djangoApi)
 }

@@ -2,6 +2,7 @@ package com.gastromind.app.data.remote
 
 import com.gastromind.app.data.remote.dto.InsumoDto
 import com.gastromind.app.data.remote.dto.KardexResponse
+import com.gastromind.app.data.remote.dto.PlatilloCarta
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -19,4 +20,8 @@ interface DjangoApi {
         @Query("desde") desde: String?,
         @Query("hasta") hasta: String?
     ): KardexResponse
+
+    /** HU-09: la carta. Con estado=ACTIVO, solo lo que se puede pedir. */
+    @GET("api/catalogo/productos/")
+    suspend fun productos(@Query("estado") estado: String?): List<PlatilloCarta>
 }
