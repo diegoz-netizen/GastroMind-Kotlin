@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 /**
  * HU-09 (CA-09): el mozo elige platillos de la carta y los envía a cocina. Si la mesa ya tiene un pedido
  * abierto, lo que envía se suma a ese pedido (segunda ronda) en vez de abrir otro.
+ * HU-12 (CA-12): con todo servido, el mozo cierra la mesa y ve la cuenta.
  */
 class PedidoMesaViewModel(
     private val mesaId: Long,
@@ -75,6 +76,25 @@ class PedidoMesaViewModel(
                 }
                 // Se queda lo elegido para reintentar sin volver a marcar todo
                 is Resultado.Error -> _uiState.update { it.copy(enviando = false, errorEnvio = resultado.mensaje) }
+            }
+        }
+    }
+
+    /** HU-12: primero se confirma, para que un toque sin querer no cierre la mesa. */
+    fun pedirCierre() {
+        if (_uiState.value.puedeCerrar) _uiState.update { it.copy(confirmandoCierre = true, errorCierre = null) }
+    }
+
+    fun cancelarCierre() = _uiState.update { it.copy(confirmandoCierre = false) }
+
+    fun cerrar() {
+        val pedido = _uiState.value.pedidoActual ?: return
+        if (!_uiState.value.puedeCerrar) return
+        _uiState.update { it.copy(confirmandoCierre = false, cerrando = true, errorCierre = null) }
+        viewModelScope.launch {
+            when (val resultado = repo.cerrar(pedido.id)) {
+                is Resultado.Exito -> _uiState.update { it.copy(cerrando = false, cuenta = resultado.valor) }
+                is Resultado.Error -> _uiState.update { it.copy(cerrando = false, errorCierre = resultado.mensaje) }
             }
         }
     }

@@ -21,3 +21,19 @@ data class CrearPedidoRequest(val mesaId: Long, val items: List<ItemPedidoReques
 
 /** HU-09, segunda ronda: se suma al pedido abierto de la mesa. */
 data class AgregarPlatillosRequest(val items: List<ItemPedidoRequest>)
+
+/** HU-12 (CA-12): POST /api/pedidos/{id}/cerrar. Solo trae lo servido; los anulados no suman. */
+data class CuentaDto(
+    val pedidoId: Long,
+    val mesaNumero: Int,
+    val estado: String,
+    val lineas: List<LineaCuentaDto>,
+    val total: BigDecimal
+)
+
+data class LineaCuentaDto(
+    val producto: String,
+    val cantidad: Int,
+    val precioUnitario: BigDecimal,
+    val subtotal: BigDecimal
+)

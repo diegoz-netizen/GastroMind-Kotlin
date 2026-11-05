@@ -32,6 +32,15 @@ class TomaPedidoRepositoryImpl(
         respuesta.aPedido()
     }
 
+    override suspend fun cerrar(pedidoId: Long): Resultado<Cuenta> = llamar {
+        val cuenta = api.cerrarMesa(pedidoId)
+        Cuenta(
+            mesaNumero = cuenta.mesaNumero,
+            lineas = cuenta.lineas.map { LineaCuenta(it.producto, it.cantidad, it.precioUnitario, it.subtotal) },
+            total = cuenta.total
+        )
+    }
+
     private suspend fun <T> llamar(llamada: suspend () -> T): Resultado<T> = try {
         Resultado.Exito(llamada())
     } catch (e: CancellationException) {
