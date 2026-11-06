@@ -70,7 +70,7 @@ class PedidoMesaViewModel(
         if (!estado.puedeEnviar) return
         _uiState.update { it.copy(enviando = true, errorEnvio = null) }
         viewModelScope.launch {
-            when (val resultado = repo.enviar(mesaId, estado.pedidoActual?.id, estado.cantidades)) {
+            when (val resultado = repo.enviar(mesaId, estado.pedidoActual?.id, estado.itemsEnOrdenDeCarta)) {
                 is Resultado.Exito -> _uiState.update {
                     it.copy(enviando = false, enviado = true, pedidoActual = resultado.valor, cantidades = emptyMap())
                 }
