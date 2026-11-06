@@ -23,6 +23,10 @@ data class PedidoMesaUiState(
             suma + platillo.precio * BigDecimal(cantidades[platillo.id] ?: 0)
         }
 
+    /** Lo elegido en el orden de la carta, no en el que se tocaron los botones: así sale la comanda en cocina. */
+    val itemsEnOrdenDeCarta: Map<Long, Int>
+        get() = carta.mapNotNull { platillo -> cantidades[platillo.id]?.let { platillo.id to it } }.toMap()
+
     /** CA-09: un pedido vacío no se envía. */
     val puedeEnviar: Boolean get() = totalPlatillos > 0 && !enviando && !cargando
 

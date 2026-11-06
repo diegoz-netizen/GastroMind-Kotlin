@@ -271,7 +271,8 @@ private fun BarraEnviar(estado: PedidoMesaUiState, onEnviar: () -> Unit) {
     }
 }
 
-private fun soles(monto: BigDecimal) = "S/ " + monto.setScale(2, RoundingMode.HALF_UP).toPlainString()
+// Con coma decimal, como el kardex y el prototipo
+private fun soles(monto: BigDecimal) = "S/ " + monto.setScale(2, RoundingMode.HALF_UP).toPlainString().replace('.', ',')
 
 @Preview(showBackground = true, widthDp = 400, heightDp = 800)
 @Composable

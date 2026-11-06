@@ -64,6 +64,15 @@ class PedidoMesaViewModelTest {
     }
 
     @Test
+    fun enviar_MandaLosPlatillosEnElOrdenDeLaCarta() {
+        val vm = vm()
+        vm.sumar(11); vm.sumar(10)
+        vm.enviar()
+
+        assertEquals(listOf(10L, 11L), repo.enviados.single().items.keys.toList())
+    }
+
+    @Test
     fun enviar_ConPedidoAbierto_EsSegundaRondaSobreEsePedido() {
         repo.pedidoDeMesa = Resultado.Exito(FakeTomaPedidoRepository.pedido(7))
         val vm = vm(mesaId = 2)
