@@ -23,48 +23,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gastromind.app.data.repository.EstadoPlatillo
-import com.gastromind.app.data.session.Sesion
 import com.gastromind.app.ui.components.BarraSuperior
 import com.gastromind.app.ui.components.EstadoVacio
 import com.gastromind.app.ui.components.EtiquetaEstado
 import com.gastromind.app.ui.components.MensajeError
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.pedidos.Comanda
-import com.gastromind.app.ui.pedidos.PedidosEnVivoViewModel
 import com.gastromind.app.ui.pedidos.PedidosUiState
 import com.gastromind.app.ui.pedidos.PlatilloComanda
-import com.gastromind.app.ui.pedidos.RefrescarMientrasSeVe
 import com.gastromind.app.ui.pedidos.TextoPlatillo
 import com.gastromind.app.ui.pedidos.Urgencia
 import com.gastromind.app.ui.pedidos.hora
 import com.gastromind.app.ui.pedidos.pasoDeMozo
-import com.gastromind.app.ui.rol.InicioRolViewModel
 import com.gastromind.app.ui.theme.Dimens
 import com.gastromind.app.ui.theme.GastroMindTheme
 import java.time.LocalDateTime
-
-@Composable
-fun EnCocinaRoute(
-    sesion: Sesion,
-    vm: PedidosEnVivoViewModel = viewModel(factory = PedidosEnVivoViewModel.factory(pasoDeMozo)),
-    inicio: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory)
-) {
-    RefrescarMientrasSeVe(vm)
-    val estado by vm.uiState.collectAsStateWithLifecycle()
-    EnCocinaScreen(
-        nombre = sesion.nombreCompleto,
-        estado = estado,
-        onServir = vm::avanzar,
-        onCerrarSesion = inicio::cerrarSesion
-    )
-}
 
 /**
  * HU-11 del lado del mozo (CA-11): ve cómo avanza cada platillo y marca lo que lleva a la mesa.
@@ -81,26 +58,32 @@ fun EnCocinaScreen(
         topBar = { BarraSuperior(titulo = "Salón", subtitulo = nombre, onCerrarSesion = onCerrarSesion) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding), horizontalAlignment = Alignment.CenterHorizontally) {
-            estado.error?.let { MensajeError(it, Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm)) }
-            when {
-                estado.cargando -> PantallaCarga()
-                estado.comandas.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    EstadoVacio(
-                        icono = Icons.Outlined.RoomService,
-                        titulo = "Nada en cocina",
-                        texto = "Aquí ves cómo avanza cada platillo y marcas lo que llevas a la mesa.",
-                        etiqueta = "Toma de pedidos en construcción · HU-09 y HU-12 · Piero"
-                    )
-                }
-                else -> LazyColumn(
-                    contentPadding = PaddingValues(Dimens.lg),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.md),
-                    modifier = Modifier.widthIn(max = Dimens.anchoContenido).fillMaxSize()
-                ) {
-                    items(estado.comandas, key = { it.pedidoId }) { comanda ->
-                        TarjetaMesa(comanda, estado.cambiando, onServir)
-                    }
+        EnCocinaContenido(estado, onServir, Modifier.padding(padding))
+    }
+}
+
+/** El cuerpo de "En cocina": lo usa esta pantalla y la pestaña del Salón (HU-09). */
+@Composable
+fun EnCocinaContenido(estado: PedidosUiState, onServir: (Long, PlatilloComanda) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        estado.error?.let { MensajeError(it, Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm)) }
+        when {
+            estado.cargando -> PantallaCarga()
+            estado.comandas.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                EstadoVacio(
+                    icono = Icons.Outlined.RoomService,
+                    titulo = "Nada en cocina",
+                    texto = "Aquí ves cómo avanza cada platillo y marcas lo que llevas a la mesa.",
+                    etiqueta = "Cierre de mesa en construcción · HU-12 · Piero"
+                )
+            }
+            else -> LazyColumn(
+                contentPadding = PaddingValues(Dimens.lg),
+                verticalArrangement = Arrangement.spacedBy(Dimens.md),
+                modifier = Modifier.widthIn(max = Dimens.anchoContenido).fillMaxSize()
+            ) {
+                items(estado.comandas, key = { it.pedidoId }) { comanda ->
+                    TarjetaMesa(comanda, estado.cambiando, onServir)
                 }
             }
         }

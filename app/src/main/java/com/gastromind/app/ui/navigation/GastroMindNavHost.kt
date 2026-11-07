@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.gastromind.app.data.session.EstadoSesion
 import com.gastromind.app.data.session.Rol
 import com.gastromind.app.data.session.SesionStore
@@ -14,7 +16,8 @@ import com.gastromind.app.ui.almacen.AlmacenRoute
 import com.gastromind.app.ui.cocina.ComandaRoute
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.login.LoginRoute
-import com.gastromind.app.ui.mozo.EnCocinaRoute
+import com.gastromind.app.ui.mozo.PedidoMesaRoute
+import com.gastromind.app.ui.mozo.SalonRoute
 import com.gastromind.app.ui.rol.InicioRolRoute
 import com.gastromind.app.ui.theme.GastroMindCocinaTheme
 
@@ -25,6 +28,9 @@ object Rutas {
     const val COCINA = "cocina"
     const val ALMACEN = "almacen"
     const val SIN_APP = "sin-app"
+    const val MOZO_MESA = "mozo/mesa/{mesaId}/{numero}"
+
+    fun mesa(mesaId: Long, numero: Int) = "mozo/mesa/$mesaId/$numero"
 
     fun inicioDe(rol: Rol) = when (rol) {
         Rol.MOZO -> MOZO
@@ -59,7 +65,20 @@ fun GastroMindNavHost(sesionStore: SesionStore) {
             (estado as? EstadoSesion.Activa)?.let { GastroMindCocinaTheme { ComandaRoute(sesion = it.sesion) } }
         }
         composable(Rutas.MOZO) {
-            (estado as? EstadoSesion.Activa)?.let { EnCocinaRoute(sesion = it.sesion) }
+            (estado as? EstadoSesion.Activa)?.let {
+                SalonRoute(sesion = it.sesion, onAbrirMesa = { mesa -> nav.navigate(Rutas.mesa(mesa.id, mesa.numero)) })
+            }
+        }
+        composable(
+            Rutas.MOZO_MESA,
+            arguments = listOf(navArgument("mesaId") { type = NavType.LongType }, navArgument("numero") { type = NavType.IntType })
+        ) { entrada ->
+            val argumentos = entrada.arguments ?: return@composable
+            PedidoMesaRoute(
+                mesaId = argumentos.getLong("mesaId"),
+                mesaNumero = argumentos.getInt("numero"),
+                onVolver = { nav.popBackStack() }
+            )
         }
         composable(Rutas.ALMACEN) {
             (estado as? EstadoSesion.Activa)?.let { AlmacenRoute(sesion = it.sesion) }
