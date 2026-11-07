@@ -21,6 +21,7 @@ object Dimens {
     val anchoContenido = 640.dp
     /** Cuatro comandas por fila en la tablet de cocina, una en el teléfono. */
     val anchoComanda = 260.dp
+    val anchoMesa = 104.dp
     val altoBotonEstado = 48.dp
     val borde = 1.dp
     val bordeDestacado = 2.dp

@@ -5,7 +5,9 @@ data class PedidoResponse(
     val id: Long,
     val mesaNumero: Int,
     val fechaRegistro: String,
-    val detalles: List<DetalleResponse>
+    val detalles: List<DetalleResponse>,
+    /** HU-09: para encontrar el pedido abierto de una mesa. */
+    val mesaId: Long? = null
 )
 
 data class DetalleResponse(

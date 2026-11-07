@@ -15,6 +15,8 @@ import com.gastromind.app.data.repository.KardexRepository
 import com.gastromind.app.data.repository.KardexRepositoryImpl
 import com.gastromind.app.data.repository.PedidoRepository
 import com.gastromind.app.data.repository.PedidoRepositoryImpl
+import com.gastromind.app.data.repository.TomaPedidoRepository
+import com.gastromind.app.data.repository.TomaPedidoRepositoryImpl
 import com.gastromind.app.data.session.SesionStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -26,7 +28,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Inyección manual (sin Hilt), como en el curso: aquí se crean una sola vez el cliente HTTP,
- * la sesión y los repositorios. Cada HU agrega su repositorio aquí (p. ej. pedidoRepository en la HU-09).
+ * la sesión y los repositorios. Cada HU agrega su repositorio aquí.
  */
 class AppContainer(context: Context) {
 
@@ -65,4 +67,5 @@ class AppContainer(context: Context) {
     val compraRepository: CompraRepository = CompraRepositoryImpl(api)
     val conteoRepository: ConteoRepository = ConteoRepositoryImpl(api)
     val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
+    val tomaPedidoRepository: TomaPedidoRepository = TomaPedidoRepositoryImpl(api, djangoApi)
 }
