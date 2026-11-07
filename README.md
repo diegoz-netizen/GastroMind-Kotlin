@@ -49,6 +49,7 @@ com.gastromind.app/
 | Inicio de cocina | HU-10, HU-11 · Diego | Pantalla vacía para empezar |
 | Almacén: pestaña Ingreso | HU-14 · Victor | ✅ Necesita `/api/compras` (Spring #36) |
 | Almacén: pestaña Kardex | HU-15 · Victor | ✅ Necesita el kardex de Django (Django #18) |
+| Almacén: pestaña Conteo | HU-30 · Diego | ✅ El almacenero elige un insumo, escribe lo que contó y ve si falta o sobra contra el sistema. El stock no cambia: la diferencia sale en el reporte teórico vs. real (HU-20). Necesita `POST /api/conteos` (Spring) y la migración `009` en la BD |
 | Administrador | — | "Usa la web" (la app es para el personal operativo) |
 
 | Login con PIN | PIN incorrecto | Empleado recordado | Correo y contraseña | Cocina | Salón |
