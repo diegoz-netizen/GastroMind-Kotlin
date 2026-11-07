@@ -18,3 +18,9 @@ data class DetalleResponse(
 )
 
 data class CambioEstadoRequest(val estado: String)
+
+/** HU-18: el motivo es obligatorio si el platillo ya entró a cocina (sus insumos van como merma). */
+data class AnularPlatilloRequest(val motivoId: Long?)
+
+/** GET /api/mermas/motivos (HU-17): los globales y los del restaurante. */
+data class MotivoMermaDto(val id: Long, val nombre: String)

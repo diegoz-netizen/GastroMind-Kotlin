@@ -1,6 +1,7 @@
 package com.gastromind.app.data.remote
 
 import com.gastromind.app.data.remote.dto.AgregarPlatillosRequest
+import com.gastromind.app.data.remote.dto.AnularPlatilloRequest
 import com.gastromind.app.data.remote.dto.AuthResponse
 import com.gastromind.app.data.remote.dto.CambioEstadoRequest
 import com.gastromind.app.data.remote.dto.CompraOpcionesResponse
@@ -13,6 +14,7 @@ import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
 import com.gastromind.app.data.remote.dto.LoginRequest
 import com.gastromind.app.data.remote.dto.MesaDto
+import com.gastromind.app.data.remote.dto.MotivoMermaDto
 import com.gastromind.app.data.remote.dto.PedidoResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -61,6 +63,18 @@ interface GastroMindApi {
         @Path("detalleId") detalleId: Long,
         @Body request: CambioEstadoRequest
     ): PedidoResponse
+
+    /** HU-18: anula un platillo; si ya entró a cocina, sus insumos quedan como merma con el motivo. */
+    @POST("api/pedidos/{pedidoId}/detalles/{detalleId}/anular")
+    suspend fun anularPlatillo(
+        @Path("pedidoId") pedidoId: Long,
+        @Path("detalleId") detalleId: Long,
+        @Body request: AnularPlatilloRequest
+    ): PedidoResponse
+
+    /** HU-17 y HU-18: motivos de merma para elegir. */
+    @GET("api/mermas/motivos")
+    suspend fun motivosDeMerma(): List<MotivoMermaDto>
 
     /** HU-14: proveedores e insumos del restaurante para el formulario. */
     @GET("api/compras/opciones")

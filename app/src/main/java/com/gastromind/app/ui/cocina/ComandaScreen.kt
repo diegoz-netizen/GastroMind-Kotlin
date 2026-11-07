@@ -15,9 +15,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.SoupKitchen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
@@ -55,15 +58,24 @@ import java.time.LocalDateTime
 fun ComandaRoute(
     sesion: Sesion,
     vm: PedidosEnVivoViewModel = viewModel(factory = PedidosEnVivoViewModel.factory(pasoDeCocina)),
-    inicio: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory)
+    inicio: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory),
+    anularVm: AnularViewModel = viewModel(factory = AnularViewModel.Factory)
 ) {
     RefrescarMientrasSeVe(vm)
     val estado by vm.uiState.collectAsStateWithLifecycle()
+    val anular by anularVm.uiState.collectAsStateWithLifecycle()
     ComandaScreen(
         nombre = sesion.nombreCompleto,
         estado = estado,
         onAvanzar = vm::avanzar,
-        onCerrarSesion = inicio::cerrarSesion
+        onCerrarSesion = inicio::cerrarSesion,
+        onAnular = anularVm::abrir
+    )
+    DialogoAnular(
+        estado = anular,
+        onMotivo = anularVm::onMotivo,
+        onConfirmar = { anularVm.confirmar(vm::reemplazar) },
+        onCancelar = anularVm::cerrar
     )
 }
 
@@ -73,7 +85,8 @@ fun ComandaScreen(
     nombre: String,
     estado: PedidosUiState,
     onAvanzar: (Long, PlatilloComanda) -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    onAnular: (Long, Int, PlatilloComanda) -> Unit = { _, _, _ -> }
 ) {
     Scaffold(
         topBar = {
@@ -109,7 +122,7 @@ fun ComandaScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(estado.comandas, key = { it.pedidoId }) { comanda ->
-                        TarjetaComanda(comanda, estado.cambiando, onAvanzar)
+                        TarjetaComanda(comanda, estado.cambiando, onAvanzar, onAnular)
                     }
                 }
             }
@@ -118,7 +131,12 @@ fun ComandaScreen(
 }
 
 @Composable
-private fun TarjetaComanda(comanda: Comanda, cambiando: Set<Long>, onAvanzar: (Long, PlatilloComanda) -> Unit) {
+private fun TarjetaComanda(
+    comanda: Comanda,
+    cambiando: Set<Long>,
+    onAvanzar: (Long, PlatilloComanda) -> Unit,
+    onAnular: (Long, Int, PlatilloComanda) -> Unit
+) {
     val colores = MaterialTheme.colorScheme
     val (fondo, texto) = when (comanda.urgencia) {
         Urgencia.DEMORADA -> colores.tertiaryContainer to colores.onTertiaryContainer
@@ -148,7 +166,8 @@ private fun TarjetaComanda(comanda: Comanda, cambiando: Set<Long>, onAvanzar: (L
                 FilaPlatillo(
                     platillo = platillo,
                     ocupado = platillo.id in cambiando,
-                    onAvanzar = { onAvanzar(comanda.pedidoId, platillo) }
+                    onAvanzar = { onAvanzar(comanda.pedidoId, platillo) },
+                    onAnular = { onAnular(comanda.pedidoId, comanda.mesaNumero, platillo) }
                 )
             }
         }
@@ -156,7 +175,7 @@ private fun TarjetaComanda(comanda: Comanda, cambiando: Set<Long>, onAvanzar: (L
 }
 
 @Composable
-private fun FilaPlatillo(platillo: PlatilloComanda, ocupado: Boolean, onAvanzar: () -> Unit) {
+private fun FilaPlatillo(platillo: PlatilloComanda, ocupado: Boolean, onAvanzar: () -> Unit, onAnular: () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
@@ -166,6 +185,16 @@ private fun FilaPlatillo(platillo: PlatilloComanda, ocupado: Boolean, onAvanzar:
             TextoPlatillo(platillo, Modifier.weight(1f))
         }
         BotonEstado(platillo, ocupado, onAvanzar)
+        // HU-18: lo que ya se empezó se puede anular; sus insumos quedan como merma
+        if (sePuedeAnularEnCocina(platillo.estado)) {
+            IconButton(onClick = onAnular, enabled = !ocupado) {
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = "Anular ${platillo.nombre}",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
