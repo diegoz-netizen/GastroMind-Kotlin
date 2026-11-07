@@ -4,6 +4,8 @@ import com.gastromind.app.data.remote.dto.AgregarPlatillosRequest
 import com.gastromind.app.data.remote.dto.AuthResponse
 import com.gastromind.app.data.remote.dto.CambioEstadoRequest
 import com.gastromind.app.data.remote.dto.CompraOpcionesResponse
+import com.gastromind.app.data.remote.dto.ConteoRequest
+import com.gastromind.app.data.remote.dto.ConteoResponse
 import com.gastromind.app.data.remote.dto.CrearPedidoRequest
 import com.gastromind.app.data.remote.dto.CuentaDto
 import com.gastromind.app.data.remote.dto.IngresoCompraRequest
@@ -67,4 +69,8 @@ interface GastroMindApi {
     /** HU-14: registra la compra y sube el stock. */
     @POST("api/compras")
     suspend fun registrarIngreso(@Body request: IngresoCompraRequest): IngresoCompraResponse
+
+    /** HU-30: conteo físico de un insumo; devuelve la diferencia con el sistema. */
+    @POST("api/conteos")
+    suspend fun registrarConteo(@Body request: ConteoRequest): ConteoResponse
 }

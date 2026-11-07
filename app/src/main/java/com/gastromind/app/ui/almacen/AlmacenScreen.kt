@@ -51,22 +51,27 @@ import java.time.LocalDate
 
 private const val PESTANA_INGRESO = 0
 private const val PESTANA_KARDEX = 1
-private val PESTANAS = listOf("Ingreso", "Kardex")
+private const val PESTANA_CONTEO = 2
+private val PESTANAS = listOf("Ingreso", "Kardex", "Conteo")
 
 @Composable
 fun AlmacenRoute(
     sesion: Sesion,
     inicioVm: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory),
     ingresoVm: IngresoCompraViewModel = viewModel(factory = IngresoCompraViewModel.Factory),
-    kardexVm: KardexViewModel = viewModel(factory = KardexViewModel.Factory)
+    kardexVm: KardexViewModel = viewModel(factory = KardexViewModel.Factory),
+    conteoVm: ConteoViewModel = viewModel(factory = ConteoViewModel.Factory)
 ) {
     val estado by ingresoVm.uiState.collectAsStateWithLifecycle()
     val kardex by kardexVm.uiState.collectAsStateWithLifecycle()
+    val conteo by conteoVm.uiState.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(PESTANA_INGRESO) }
 
     // Cada vez que se abre: una compra recién registrada ya tiene que verse en el kardex
     LaunchedEffect(pestana) {
         if (pestana == PESTANA_KARDEX) kardexVm.actualizar()
+        // El conteo se compara con el stock de ahora, no con el de cuando se abrió la app
+        if (pestana == PESTANA_CONTEO) conteoVm.actualizar()
     }
 
     AlmacenScreen(
@@ -87,7 +92,12 @@ fun AlmacenRoute(
         onReintentarKardex = kardexVm::actualizar,
         onInsumoKardex = kardexVm::onInsumo,
         onDesde = kardexVm::onDesde,
-        onHasta = kardexVm::onHasta
+        onHasta = kardexVm::onHasta,
+        conteo = conteo,
+        onReintentarConteo = conteoVm::actualizar,
+        onInsumoConteo = conteoVm::onInsumo,
+        onCantidadConteo = conteoVm::onCantidad,
+        onRegistrarConteo = conteoVm::registrar
     )
 }
 
@@ -110,7 +120,12 @@ fun AlmacenScreen(
     onReintentarKardex: () -> Unit,
     onInsumoKardex: (Long) -> Unit,
     onDesde: (LocalDate?) -> Unit,
-    onHasta: (LocalDate?) -> Unit
+    onHasta: (LocalDate?) -> Unit,
+    conteo: ConteoUiState,
+    onReintentarConteo: () -> Unit,
+    onInsumoConteo: (Long) -> Unit,
+    onCantidadConteo: (String) -> Unit,
+    onRegistrarConteo: () -> Unit
 ) {
     val formularioListo = pestana == PESTANA_INGRESO && !estado.cargando && estado.errorCarga == null
     Scaffold(
@@ -137,12 +152,12 @@ fun AlmacenScreen(
                 Pestanas(PESTANAS, pestana, onPestana, Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm))
             }
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                if (pestana == PESTANA_INGRESO) {
-                    IngresoCompra(
+                when (pestana) {
+                    PESTANA_INGRESO -> IngresoCompra(
                         estado, onReintentar, onProveedor, onInsumo, onCantidad, onCostoTotal, onLote, onVencimiento
                     )
-                } else {
-                    KardexPestana(kardex, onReintentarKardex, onInsumoKardex, onDesde, onHasta)
+                    PESTANA_KARDEX -> KardexPestana(kardex, onReintentarKardex, onInsumoKardex, onDesde, onHasta)
+                    else -> ConteoPestana(conteo, onReintentarConteo, onInsumoConteo, onCantidadConteo, onRegistrarConteo)
                 }
             }
         }
@@ -283,7 +298,12 @@ private fun AlmacenPreview() {
             onReintentarKardex = {},
             onInsumoKardex = {},
             onDesde = {},
-            onHasta = {}
+            onHasta = {},
+            conteo = ConteoUiState(),
+            onReintentarConteo = {},
+            onInsumoConteo = {},
+            onCantidadConteo = {},
+            onRegistrarConteo = {}
         )
     }
 }
