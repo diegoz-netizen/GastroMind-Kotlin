@@ -9,6 +9,8 @@ import com.gastromind.app.data.repository.AuthRepository
 import com.gastromind.app.data.repository.AuthRepositoryImpl
 import com.gastromind.app.data.repository.CompraRepository
 import com.gastromind.app.data.repository.CompraRepositoryImpl
+import com.gastromind.app.data.repository.ConteoRepository
+import com.gastromind.app.data.repository.ConteoRepositoryImpl
 import com.gastromind.app.data.repository.KardexRepository
 import com.gastromind.app.data.repository.KardexRepositoryImpl
 import com.gastromind.app.data.repository.PedidoRepository
@@ -61,5 +63,6 @@ class AppContainer(context: Context) {
     val authRepository: AuthRepository = AuthRepositoryImpl(api, sesionStore)
     val pedidoRepository: PedidoRepository = PedidoRepositoryImpl(api)
     val compraRepository: CompraRepository = CompraRepositoryImpl(api)
+    val conteoRepository: ConteoRepository = ConteoRepositoryImpl(api)
     val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
 }
