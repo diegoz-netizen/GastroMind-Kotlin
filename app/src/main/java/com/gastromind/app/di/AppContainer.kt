@@ -15,6 +15,8 @@ import com.gastromind.app.data.repository.ConteoRepository
 import com.gastromind.app.data.repository.ConteoRepositoryImpl
 import com.gastromind.app.data.repository.KardexRepository
 import com.gastromind.app.data.repository.KardexRepositoryImpl
+import com.gastromind.app.data.repository.MermaRepository
+import com.gastromind.app.data.repository.MermaRepositoryImpl
 import com.gastromind.app.data.repository.PedidoRepository
 import com.gastromind.app.data.repository.PedidoRepositoryImpl
 import com.gastromind.app.data.repository.TomaPedidoRepository
@@ -69,6 +71,7 @@ class AppContainer(context: Context) {
     val anularRepository: AnularRepository = AnularRepositoryImpl(api)
     val compraRepository: CompraRepository = CompraRepositoryImpl(api)
     val conteoRepository: ConteoRepository = ConteoRepositoryImpl(api)
+    val mermaRepository: MermaRepository = MermaRepositoryImpl(api)
     val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
     val tomaPedidoRepository: TomaPedidoRepository = TomaPedidoRepositoryImpl(api, djangoApi)
 }

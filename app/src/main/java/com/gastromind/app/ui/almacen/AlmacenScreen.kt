@@ -52,7 +52,8 @@ import java.time.LocalDate
 private const val PESTANA_INGRESO = 0
 private const val PESTANA_KARDEX = 1
 private const val PESTANA_CONTEO = 2
-private val PESTANAS = listOf("Ingreso", "Kardex", "Conteo")
+private const val PESTANA_MERMA = 3
+private val PESTANAS = listOf("Ingreso", "Kardex", "Conteo", "Merma")
 
 @Composable
 fun AlmacenRoute(
@@ -60,11 +61,13 @@ fun AlmacenRoute(
     inicioVm: InicioRolViewModel = viewModel(factory = InicioRolViewModel.Factory),
     ingresoVm: IngresoCompraViewModel = viewModel(factory = IngresoCompraViewModel.Factory),
     kardexVm: KardexViewModel = viewModel(factory = KardexViewModel.Factory),
-    conteoVm: ConteoViewModel = viewModel(factory = ConteoViewModel.Factory)
+    conteoVm: ConteoViewModel = viewModel(factory = ConteoViewModel.Factory),
+    mermaVm: MermaViewModel = viewModel(factory = MermaViewModel.Factory)
 ) {
     val estado by ingresoVm.uiState.collectAsStateWithLifecycle()
     val kardex by kardexVm.uiState.collectAsStateWithLifecycle()
     val conteo by conteoVm.uiState.collectAsStateWithLifecycle()
+    val merma by mermaVm.uiState.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(PESTANA_INGRESO) }
 
     // Cada vez que se abre: una compra recién registrada ya tiene que verse en el kardex
@@ -72,6 +75,8 @@ fun AlmacenRoute(
         if (pestana == PESTANA_KARDEX) kardexVm.actualizar()
         // El conteo se compara con el stock de ahora, no con el de cuando se abrió la app
         if (pestana == PESTANA_CONTEO) conteoVm.actualizar()
+        // La merma muestra cuánto queda: también se relee el stock
+        if (pestana == PESTANA_MERMA) mermaVm.actualizar()
     }
 
     AlmacenScreen(
@@ -97,7 +102,13 @@ fun AlmacenRoute(
         onReintentarConteo = conteoVm::actualizar,
         onInsumoConteo = conteoVm::onInsumo,
         onCantidadConteo = conteoVm::onCantidad,
-        onRegistrarConteo = conteoVm::registrar
+        onRegistrarConteo = conteoVm::registrar,
+        merma = merma,
+        onReintentarMerma = mermaVm::actualizar,
+        onInsumoMerma = mermaVm::onInsumo,
+        onCantidadMerma = mermaVm::onCantidad,
+        onMotivoMerma = mermaVm::onMotivo,
+        onRegistrarMerma = mermaVm::registrar
     )
 }
 
@@ -125,7 +136,13 @@ fun AlmacenScreen(
     onReintentarConteo: () -> Unit,
     onInsumoConteo: (Long) -> Unit,
     onCantidadConteo: (String) -> Unit,
-    onRegistrarConteo: () -> Unit
+    onRegistrarConteo: () -> Unit,
+    merma: MermaUiState,
+    onReintentarMerma: () -> Unit,
+    onInsumoMerma: (Long) -> Unit,
+    onCantidadMerma: (String) -> Unit,
+    onMotivoMerma: (Long) -> Unit,
+    onRegistrarMerma: () -> Unit
 ) {
     val formularioListo = pestana == PESTANA_INGRESO && !estado.cargando && estado.errorCarga == null
     Scaffold(
@@ -157,7 +174,8 @@ fun AlmacenScreen(
                         estado, onReintentar, onProveedor, onInsumo, onCantidad, onCostoTotal, onLote, onVencimiento
                     )
                     PESTANA_KARDEX -> KardexPestana(kardex, onReintentarKardex, onInsumoKardex, onDesde, onHasta)
-                    else -> ConteoPestana(conteo, onReintentarConteo, onInsumoConteo, onCantidadConteo, onRegistrarConteo)
+                    PESTANA_CONTEO -> ConteoPestana(conteo, onReintentarConteo, onInsumoConteo, onCantidadConteo, onRegistrarConteo)
+                    else -> MermaPestana(merma, onReintentarMerma, onInsumoMerma, onCantidadMerma, onMotivoMerma, onRegistrarMerma)
                 }
             }
         }
@@ -303,7 +321,13 @@ private fun AlmacenPreview() {
             onReintentarConteo = {},
             onInsumoConteo = {},
             onCantidadConteo = {},
-            onRegistrarConteo = {}
+            onRegistrarConteo = {},
+            merma = MermaUiState(),
+            onReintentarMerma = {},
+            onInsumoMerma = {},
+            onCantidadMerma = {},
+            onMotivoMerma = {},
+            onRegistrarMerma = {}
         )
     }
 }

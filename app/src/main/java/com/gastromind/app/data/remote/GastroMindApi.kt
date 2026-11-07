@@ -13,6 +13,8 @@ import com.gastromind.app.data.remote.dto.IngresoCompraRequest
 import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
 import com.gastromind.app.data.remote.dto.LoginRequest
+import com.gastromind.app.data.remote.dto.MermaRequest
+import com.gastromind.app.data.remote.dto.MermaResponse
 import com.gastromind.app.data.remote.dto.MesaDto
 import com.gastromind.app.data.remote.dto.MotivoMermaDto
 import com.gastromind.app.data.remote.dto.PedidoResponse
@@ -75,6 +77,10 @@ interface GastroMindApi {
     /** HU-17 y HU-18: motivos de merma para elegir. */
     @GET("api/mermas/motivos")
     suspend fun motivosDeMerma(): List<MotivoMermaDto>
+
+    /** HU-17: registra una merma (insumo, cantidad y motivo); descuenta el stock. */
+    @POST("api/mermas")
+    suspend fun registrarMerma(@Body request: MermaRequest): MermaResponse
 
     /** HU-14: proveedores e insumos del restaurante para el formulario. */
     @GET("api/compras/opciones")
