@@ -82,6 +82,13 @@ class PedidosEnVivoViewModel(
         }
     }
 
+    /** HU-18: otra acción (anular) ya trajo el pedido actualizado; se muestra sin esperar el refresco. */
+    fun reemplazar(pedido: Pedido) {
+        cambiosTerminados++
+        pedidos = pedidos.map { if (it.id == pedido.id) pedido else it }
+        publicar()
+    }
+
     private suspend fun refrescar() {
         val cambiosAlEmpezar = cambiosTerminados
         val resultado = repo.vigentes()
