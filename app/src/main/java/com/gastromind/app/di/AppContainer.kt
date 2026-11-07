@@ -5,6 +5,8 @@ import com.gastromind.app.BuildConfig
 import com.gastromind.app.data.remote.AuthInterceptor
 import com.gastromind.app.data.remote.DjangoApi
 import com.gastromind.app.data.remote.GastroMindApi
+import com.gastromind.app.data.repository.AnularRepository
+import com.gastromind.app.data.repository.AnularRepositoryImpl
 import com.gastromind.app.data.repository.AuthRepository
 import com.gastromind.app.data.repository.AuthRepositoryImpl
 import com.gastromind.app.data.repository.CompraRepository
@@ -64,6 +66,7 @@ class AppContainer(context: Context) {
 
     val authRepository: AuthRepository = AuthRepositoryImpl(api, sesionStore)
     val pedidoRepository: PedidoRepository = PedidoRepositoryImpl(api)
+    val anularRepository: AnularRepository = AnularRepositoryImpl(api)
     val compraRepository: CompraRepository = CompraRepositoryImpl(api)
     val conteoRepository: ConteoRepository = ConteoRepositoryImpl(api)
     val kardexRepository: KardexRepository = KardexRepositoryImpl(djangoApi)
