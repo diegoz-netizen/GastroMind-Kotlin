@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +28,7 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -38,8 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gastromind.app.data.repository.Cuenta
 import com.gastromind.app.data.repository.EstadoPlatillo
 import com.gastromind.app.data.repository.Pedido
+import com.gastromind.app.data.repository.LineaCuenta
 import com.gastromind.app.data.repository.Platillo
 import com.gastromind.app.data.repository.PlatilloCarta
 import com.gastromind.app.ui.components.BotonPrincipal
@@ -73,7 +77,10 @@ fun PedidoMesaRoute(
         onRestar = vm::restar,
         onEnviar = vm::enviar,
         onReintentar = vm::cargar,
-        onVolver = onVolver
+        onVolver = onVolver,
+        onPedirCierre = vm::pedirCierre,
+        onCancelarCierre = vm::cancelarCierre,
+        onCerrar = vm::cerrar
     )
 }
 
@@ -87,8 +94,14 @@ fun PedidoMesaScreen(
     onRestar: (Long) -> Unit,
     onEnviar: () -> Unit,
     onReintentar: () -> Unit,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onPedirCierre: () -> Unit = {},
+    onCancelarCierre: () -> Unit = {},
+    onCerrar: () -> Unit = {}
 ) {
+    if (estado.confirmandoCierre) ConfirmarCierre(mesaNumero, onCerrar, onCancelarCierre)
+    // Con la cuenta, la mesa ya quedó libre: al aceptar se vuelve al salón
+    estado.cuenta?.let { CuentaDialog(it, onVolver) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,21 +138,26 @@ fun PedidoMesaScreen(
                     MensajeError(estado.errorCarga)
                     BotonTexto("Reintentar", onReintentar)
                 }
-                else -> Carta(estado, onSumar, onRestar)
+                else -> Carta(estado, onSumar, onRestar, onPedirCierre)
             }
         }
     }
 }
 
 @Composable
-private fun Carta(estado: PedidoMesaUiState, onSumar: (Long) -> Unit, onRestar: (Long) -> Unit) {
+private fun Carta(
+    estado: PedidoMesaUiState,
+    onSumar: (Long) -> Unit,
+    onRestar: (Long) -> Unit,
+    onPedirCierre: () -> Unit
+) {
     LazyColumn(
         contentPadding = PaddingValues(Dimens.lg),
         verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         modifier = Modifier.widthIn(max = Dimens.anchoContenido).fillMaxSize()
     ) {
         estado.pedidoActual?.let { pedido ->
-            item(key = "en-mesa") { YaEnLaMesa(pedido) }
+            item(key = "en-mesa") { YaEnLaMesa(pedido, estado, onPedirCierre) }
         }
         if (estado.carta.isEmpty()) {
             item(key = "sin-carta") {
@@ -166,7 +184,7 @@ private fun Carta(estado: PedidoMesaUiState, onSumar: (Long) -> Unit, onRestar: 
 }
 
 @Composable
-private fun YaEnLaMesa(pedido: Pedido) {
+private fun YaEnLaMesa(pedido: Pedido, estado: PedidoMesaUiState, onPedirCierre: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = MaterialTheme.shapes.medium,
@@ -187,6 +205,30 @@ private fun YaEnLaMesa(pedido: Pedido) {
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(vertical = Dimens.xs))
+            estado.errorCierre?.let { MensajeError(it) }
+            if (estado.todoServido) {
+                BotonPrincipal(
+                    texto = "Cerrar mesa y ver la cuenta",
+                    onClick = onPedirCierre,
+                    habilitado = estado.puedeCerrar,
+                    cargando = estado.cerrando,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (estado.cantidades.isNotEmpty()) {
+                    Text(
+                        "Envía o quita lo elegido antes de cerrar la mesa.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                Text(
+                    "Para cerrar la mesa, todo tiene que estar servido o anulado.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -268,6 +310,66 @@ private fun BarraEnviar(estado: PedidoMesaUiState, onEnviar: () -> Unit) {
                 modifier = Modifier.widthIn(max = Dimens.anchoContenido)
             )
         }
+    }
+}
+
+@Composable
+private fun ConfirmarCierre(mesaNumero: Int, onCerrar: () -> Unit, onCancelar: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onCancelar,
+        title = { Text("¿Cerrar la mesa M$mesaNumero?") },
+        text = { Text("Se genera la cuenta con lo servido y la mesa queda libre. Ya no se le pueden agregar platillos.") },
+        confirmButton = { TextButton(onClick = onCerrar) { Text("Cerrar mesa") } },
+        dismissButton = { TextButton(onClick = onCancelar) { Text("Cancelar") } }
+    )
+}
+
+/** HU-12 (CA-12): la cuenta suma solo lo servido. GastroMind no cobra: el mozo la muestra o la dicta. */
+@Composable
+private fun CuentaDialog(cuenta: Cuenta, onListo: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onListo,
+        title = { Text("Cuenta · Mesa M${cuenta.mesaNumero}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+                if (cuenta.lineas.isEmpty()) {
+                    Text("No hubo platillos servidos.", style = MaterialTheme.typography.bodyMedium)
+                }
+                cuenta.lineas.forEach { LineaDeCuenta(it) }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Total", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        soles(cuenta.total),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontFamily = FuenteCifras,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Text(
+                    "La mesa quedó libre.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = onListo) { Text("Listo") } }
+    )
+}
+
+@Composable
+private fun LineaDeCuenta(linea: LineaCuenta) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.weight(1f)) {
+            Text("${linea.cantidad}× ${linea.producto}", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                soles(linea.precioUnitario) + " c/u",
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FuenteCifras,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(soles(linea.subtotal), style = MaterialTheme.typography.bodyMedium, fontFamily = FuenteCifras)
     }
 }
 

@@ -1,6 +1,9 @@
 package com.gastromind.app.ui.mozo
 
 import com.gastromind.app.MainDispatcherRule
+import com.gastromind.app.data.repository.EstadoPlatillo
+import com.gastromind.app.data.repository.Pedido
+import com.gastromind.app.data.repository.Platillo
 import com.gastromind.app.data.repository.Resultado
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class PedidoMesaViewModelTest {
 
@@ -113,5 +117,76 @@ class PedidoMesaViewModelTest {
         vm.cargar()
         assertNull(vm.uiState.value.errorCarga)
         assertEquals(2, vm.uiState.value.carta.size)
+    }
+
+    // HU-12: cerrar la mesa y ver la cuenta (CA-12)
+
+    private fun pedidoCon(vararg estados: EstadoPlatillo) = Pedido(7, 2, LocalDateTime.of(2026, 11, 4, 13, 0),
+        estados.mapIndexed { i, estado -> Platillo(100L + i, "Platillo $i", 1, estado) })
+
+    @Test
+    fun cerrar_ConTodoServidoOAnulado_PideConfirmarYTraeLaCuenta() {
+        repo.pedidoDeMesa = Resultado.Exito(pedidoCon(EstadoPlatillo.SERVIDO, EstadoPlatillo.ANULADO))
+        val vm = vm(2)
+        assertTrue(vm.uiState.value.puedeCerrar)
+
+        vm.pedirCierre()
+        assertTrue(vm.uiState.value.confirmandoCierre)
+        assertTrue(repo.cerrados.isEmpty())
+
+        vm.cerrar()
+        val s = vm.uiState.value
+        assertEquals(listOf(7L), repo.cerrados)
+        assertFalse(s.confirmandoCierre)
+        assertFalse(s.cerrando)
+        assertEquals(0, BigDecimal("32.00").compareTo(s.cuenta!!.total))
+    }
+
+    @Test
+    fun cerrar_ConPlatillosSinServir_NoSeOfreceNiSeLlama() {
+        for (falta in listOf(EstadoPlatillo.PENDIENTE, EstadoPlatillo.EN_PREPARACION, EstadoPlatillo.LISTO)) {
+            repo.pedidoDeMesa = Resultado.Exito(pedidoCon(EstadoPlatillo.SERVIDO, falta))
+            val vm = vm(2)
+            assertFalse(vm.uiState.value.todoServido)
+            vm.pedirCierre()
+            vm.cerrar()
+            assertFalse(vm.uiState.value.confirmandoCierre)
+        }
+        assertTrue(repo.cerrados.isEmpty())
+    }
+
+    @Test
+    fun cerrar_SinPedidoOConUnaRondaElegida_NoSePuede() {
+        assertFalse(vm(1).uiState.value.puedeCerrar)
+
+        repo.pedidoDeMesa = Resultado.Exito(pedidoCon(EstadoPlatillo.SERVIDO))
+        val vm = vm(2)
+        vm.sumar(10)
+        assertTrue(vm.uiState.value.todoServido)
+        assertFalse(vm.uiState.value.puedeCerrar)
+        vm.restar(10)
+        assertTrue(vm.uiState.value.puedeCerrar)
+    }
+
+    @Test
+    fun cerrar_ConError_MuestraElMensajeYNoHayCuenta() {
+        repo.pedidoDeMesa = Resultado.Exito(pedidoCon(EstadoPlatillo.SERVIDO))
+        repo.cuenta = Resultado.Error("Faltan servir o anular: Chicha (LISTO)")
+        val vm = vm(2)
+        vm.pedirCierre()
+        vm.cerrar()
+        assertEquals("Faltan servir o anular: Chicha (LISTO)", vm.uiState.value.errorCierre)
+        assertNull(vm.uiState.value.cuenta)
+        assertTrue(vm.uiState.value.puedeCerrar)
+    }
+
+    @Test
+    fun cancelarCierre_NoCierra() {
+        repo.pedidoDeMesa = Resultado.Exito(pedidoCon(EstadoPlatillo.SERVIDO))
+        val vm = vm(2)
+        vm.pedirCierre()
+        vm.cancelarCierre()
+        assertFalse(vm.uiState.value.confirmandoCierre)
+        assertTrue(repo.cerrados.isEmpty())
     }
 }

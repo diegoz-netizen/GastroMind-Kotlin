@@ -5,6 +5,7 @@ import com.gastromind.app.data.remote.dto.AuthResponse
 import com.gastromind.app.data.remote.dto.CambioEstadoRequest
 import com.gastromind.app.data.remote.dto.CompraOpcionesResponse
 import com.gastromind.app.data.remote.dto.CrearPedidoRequest
+import com.gastromind.app.data.remote.dto.CuentaDto
 import com.gastromind.app.data.remote.dto.IngresoCompraRequest
 import com.gastromind.app.data.remote.dto.IngresoCompraResponse
 import com.gastromind.app.data.remote.dto.LoginPinRequest
@@ -42,6 +43,10 @@ interface GastroMindApi {
         @Path("pedidoId") pedidoId: Long,
         @Body request: AgregarPlatillosRequest
     ): PedidoResponse
+
+    /** HU-12 (CA-12): cierra la mesa (pedido CERRADO, mesa LIBRE) y devuelve la cuenta. */
+    @POST("api/pedidos/{pedidoId}/cerrar")
+    suspend fun cerrarMesa(@Path("pedidoId") pedidoId: Long): CuentaDto
 
     /** HU-10: pedidos sin cerrar del restaurante, del más antiguo al más nuevo. */
     @GET("api/pedidos")
