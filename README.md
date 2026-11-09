@@ -72,6 +72,16 @@ El CI (GitHub Actions, `.github/workflows/ci.yml`) corre lo mismo en cada push a
 ./gradlew :app:testDebugUnitTest :app:assembleDebug
 ```
 
+## Despliegue
+
+- **APK listo:** en los [Releases](https://github.com/diegoz-netizen/GastroMind-Kotlin/releases) está el APK de demostración (`v1.0.0`). Apunta al **emulador** (`10.0.2.2`).
+- **Celular o tablet reales:** compilar con la IP de la PC que corre los backends, en la misma red wifi:
+  ```bash
+  ./gradlew assembleDebug -Pgastromind.apiUrl=http://<IP de la PC>:8080/ -Pgastromind.djangoUrl=http://<IP de la PC>:8000/
+  ```
+  El APK queda en `app/build/outputs/apk/debug/app-debug.apk`. Hay que permitir *instalar apps de origen desconocido*, y agregar la IP de la PC a `DJANGO_ALLOWED_HOSTS` del `.env` de los backends (si no, el Kardex responde `400`).
+- **Los backends** (PostgreSQL, Spring, Django y la web) se levantan con un solo comando desde el repo de Spring: ver su [`docs/DESPLIEGUE.md`](https://github.com/diegoz-netizen/GastroMind-SpringBoot/blob/main/docs/DESPLIEGUE.md).
+
 ## Sistema de diseño
 
 Sale del **prototipo final** del equipo (Figma, 27/10). Está todo en `ui/theme` y `ui/components`; las pantallas no usan colores, tamaños ni formas a mano.
