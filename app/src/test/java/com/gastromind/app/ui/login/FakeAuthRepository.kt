@@ -23,7 +23,11 @@ class FakeAuthRepository(recordado: EmpleadoRecordado? = null) : AuthRepository 
         return respuesta
     }
 
-    override suspend fun cerrarSesion() {}
+    var cierresDeSesion = 0
+
+    override suspend fun cerrarSesion() {
+        cierresDeSesion++
+    }
 
     override suspend fun olvidarEmpleado() {
         recordado.value = null
