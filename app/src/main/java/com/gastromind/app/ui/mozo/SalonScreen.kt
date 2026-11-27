@@ -1,5 +1,9 @@
 package com.gastromind.app.ui.mozo
 
+import androidx.compose.material.icons.outlined.SoupKitchen
+import com.gastromind.app.ui.components.TituloSeccion
+import com.gastromind.app.ui.components.Seccion
+import com.gastromind.app.ui.components.BarraInferior
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +49,6 @@ import com.gastromind.app.ui.components.EstadoVacio
 import com.gastromind.app.ui.components.Tono
 import com.gastromind.app.ui.components.MensajeError
 import com.gastromind.app.ui.components.PantallaCarga
-import com.gastromind.app.ui.components.Pestanas
 import com.gastromind.app.ui.pedidos.PedidosEnVivoViewModel
 import com.gastromind.app.ui.pedidos.PedidosUiState
 import com.gastromind.app.ui.pedidos.PlatilloComanda
@@ -56,7 +59,7 @@ import com.gastromind.app.ui.theme.Dimens
 import com.gastromind.app.ui.theme.FuenteCifras
 import com.gastromind.app.ui.theme.GastroMindTheme
 
-private val PESTANAS = listOf("Mesas", "En cocina")
+private val SECCIONES = listOf(Seccion("Salón", Icons.Outlined.TableRestaurant), Seccion("En cocina", Icons.Outlined.SoupKitchen))
 
 @Composable
 fun SalonRoute(
@@ -104,14 +107,14 @@ fun SalonScreen(
     onCerrarSesion: () -> Unit
 ) {
     Scaffold(
-        topBar = { BarraSuperior(titulo = "Salón", subtitulo = nombre, onCerrarSesion = onCerrarSesion) },
+        topBar = {
+            BarraSuperior(titulo = if (pestana == 0) "Salón" else "En cocina", subtitulo = nombre, onCerrarSesion = onCerrarSesion)
+        },
+        // Diseño móvil v3: las secciones del mozo van en la barra inferior
+        bottomBar = { BarraInferior(SECCIONES, pestana, onPestana) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding), horizontalAlignment = Alignment.CenterHorizontally) {
-            Pestanas(
-                PESTANAS, pestana, onPestana,
-                Modifier.widthIn(max = Dimens.anchoContenido).padding(horizontal = Dimens.lg, vertical = Dimens.sm)
-            )
             when (pestana) {
                 0 -> MesasContenido(mesas, onReintentarMesas, onAbrirMesa)
                 else -> EnCocinaContenido(cocina, onServir)
@@ -151,6 +154,9 @@ private fun MesasContenido(estado: MesasUiState, onReintentar: () -> Unit, onAbr
                         Indicador("Libres", libres, Modifier.weight(1f))
                         Indicador("Ocupadas", estado.mesas.size - libres, Modifier.weight(1f), destacado = true)
                     }
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    TituloSeccion("Mapa del salón", "Mesas", Modifier.padding(top = Dimens.sm))
                 }
                 items(estado.mesas, key = { it.id }) { mesa -> TarjetaMesaSalon(mesa) { onAbrirMesa(mesa) } }
             }
@@ -202,6 +208,12 @@ private fun TarjetaMesaSalon(mesa: Mesa, onClick: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
             ChipEstado(if (mesa.libre) "Libre" else "Ocupada", if (mesa.libre) Tono.Ok else Tono.Aviso)
+            // Pie del v3: qué pasa al tocarla
+            Text(
+                if (mesa.libre) "Abrir →" else "Ver pedido →",
+                style = MaterialTheme.typography.labelLarge,
+                color = if (mesa.libre) colores.primary else colores.onTertiaryContainer
+            )
         }
     }
 }

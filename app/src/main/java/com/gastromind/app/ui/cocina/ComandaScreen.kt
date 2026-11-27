@@ -1,5 +1,8 @@
 package com.gastromind.app.ui.cocina
 
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import com.gastromind.app.ui.components.ProgresoListos
+import com.gastromind.app.ui.components.InsigniaMesa
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -122,11 +125,38 @@ fun ComandaScreen(
                     horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    // Indicadores del v3: cuántas comandas hay y cuántas están demoradas
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                            IndicadorCocina("Comandas", estado.comandas.size, Modifier.weight(1f))
+                            IndicadorCocina("Demoradas", estado.comandas.count { it.urgencia == Urgencia.DEMORADA }, Modifier.weight(1f), aviso = true)
+                        }
+                    }
                     items(estado.comandas, key = { it.pedidoId }) { comanda ->
                         TarjetaComanda(comanda, estado.cambiando, onAvanzar, onAnular)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun IndicadorCocina(etiqueta: String, valor: Int, modifier: Modifier = Modifier, aviso: Boolean = false) {
+    val colores = MaterialTheme.colorScheme
+    Surface(
+        color = if (aviso && valor > 0) colores.tertiaryContainer else colores.surfaceContainerLowest,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(Dimens.borde, if (aviso && valor > 0) colores.tertiary else colores.outlineVariant),
+        modifier = modifier
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)
+        ) {
+            Text("$valor", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FuenteCifras), color = if (aviso && valor > 0) colores.onTertiaryContainer else colores.onSurface)
+            Text(etiqueta, style = MaterialTheme.typography.bodyMedium, color = colores.onSurfaceVariant)
         }
     }
 }
@@ -156,13 +186,8 @@ private fun TarjetaComanda(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().background(fondo).padding(horizontal = Dimens.md, vertical = Dimens.md)
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(Dimens.xxl + Dimens.sm)
-                        .background(if (comanda.urgencia == Urgencia.DEMORADA) colores.tertiary else colores.primary, MaterialTheme.shapes.small)
-                ) {
-                    Text("M${comanda.mesaNumero}", style = MaterialTheme.typography.titleSmall, color = colores.onPrimary)
-                }
+                if (comanda.urgencia == Urgencia.DEMORADA) InsigniaMesa(comanda.mesaNumero, colores.tertiary, colores.onTertiary)
+                else InsigniaMesa(comanda.mesaNumero)
                 Column(Modifier.weight(1f)) {
                     val nueva = if (comanda.urgencia == Urgencia.NUEVA) " · nueva" else ""
                     Text("Mesa ${comanda.mesaNumero}$nueva", style = MaterialTheme.typography.titleMedium, color = texto)
@@ -182,6 +207,13 @@ private fun TarjetaComanda(
                     onAnular = { onAnular(comanda.pedidoId, comanda.mesaNumero, platillo) }
                 )
             }
+            // Pie del v3: cuántos platillos ya están listos
+            val activos = comanda.platillos.filter { it.estado != EstadoPlatillo.ANULADO }
+            ProgresoListos(
+                activos.count { it.estado == EstadoPlatillo.LISTO || it.estado == EstadoPlatillo.SERVIDO },
+                activos.size,
+                Modifier.padding(horizontal = Dimens.md, vertical = Dimens.md)
+            )
         }
     }
 }

@@ -1,5 +1,10 @@
 package com.gastromind.app.ui.mozo
 
+import com.gastromind.app.ui.components.Tono
+import com.gastromind.app.ui.components.ChipEstado
+import com.gastromind.app.ui.components.ProgresoListos
+import com.gastromind.app.ui.components.InsigniaMesa
+import com.gastromind.app.ui.components.TituloSeccion
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,6 +87,7 @@ fun EnCocinaContenido(estado: PedidosUiState, onServir: (Long, PlatilloComanda) 
                 verticalArrangement = Arrangement.spacedBy(Dimens.md),
                 modifier = Modifier.widthIn(max = Dimens.anchoContenido).fillMaxSize()
             ) {
+                item { TituloSeccion("Seguimiento en vivo", "Pedidos del salón") }
                 items(estado.comandas, key = { it.pedidoId }) { comanda ->
                     TarjetaMesa(comanda, estado.cambiando, onServir)
                 }
@@ -93,26 +99,34 @@ fun EnCocinaContenido(estado: PedidosUiState, onServir: (Long, PlatilloComanda) 
 @Composable
 private fun TarjetaMesa(comanda: Comanda, cambiando: Set<Long>, onServir: (Long, PlatilloComanda) -> Unit) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(Dimens.borde, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.sm), modifier = Modifier.padding(Dimens.md)) {
+            // Encabezado del diseño móvil v3: insignia de la mesa, hora y estado
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Mesa M${comanda.mesaNumero}", style = MaterialTheme.typography.titleLarge)
-                Text(
-                    "desde ${comanda.horaIngreso.hora()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                InsigniaMesa(comanda.mesaNumero)
+                Column(Modifier.weight(1f)) {
+                    Text("Mesa ${comanda.mesaNumero}", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "desde ${comanda.horaIngreso.hora()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                val hayListos = comanda.platillos.any { it.siguiente != null }
+                ChipEstado(if (hayListos) "Para llevar" else "En cocina", if (hayListos) Tono.Ok else Tono.Aviso)
             }
             comanda.platillos.forEach { platillo ->
                 FilaEnCocina(platillo, platillo.id in cambiando) { onServir(comanda.pedidoId, platillo) }
             }
+            val activos = comanda.platillos.filter { it.estado != EstadoPlatillo.ANULADO }
+            ProgresoListos(activos.count { it.estado == EstadoPlatillo.LISTO || it.estado == EstadoPlatillo.SERVIDO }, activos.size)
         }
     }
 }
