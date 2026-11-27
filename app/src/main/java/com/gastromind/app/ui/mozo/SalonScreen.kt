@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -38,7 +40,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gastromind.app.data.repository.Mesa
 import com.gastromind.app.data.session.Sesion
 import com.gastromind.app.ui.components.BarraSuperior
+import com.gastromind.app.ui.components.ChipEstado
 import com.gastromind.app.ui.components.EstadoVacio
+import com.gastromind.app.ui.components.Tono
 import com.gastromind.app.ui.components.MensajeError
 import com.gastromind.app.ui.components.PantallaCarga
 import com.gastromind.app.ui.components.Pestanas
@@ -139,6 +143,15 @@ private fun MesasContenido(estado: MesasUiState, onReintentar: () -> Unit, onAbr
                 verticalArrangement = Arrangement.spacedBy(Dimens.md),
                 modifier = Modifier.widthIn(max = Dimens.anchoContenido).fillMaxSize()
             ) {
+                // Tira de indicadores del diseño móvil v3: cuántas mesas hay y cómo están
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    val libres = estado.mesas.count { it.libre }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                        Indicador("Mesas", estado.mesas.size, Modifier.weight(1f))
+                        Indicador("Libres", libres, Modifier.weight(1f))
+                        Indicador("Ocupadas", estado.mesas.size - libres, Modifier.weight(1f), destacado = true)
+                    }
+                }
                 items(estado.mesas, key = { it.id }) { mesa -> TarjetaMesaSalon(mesa) { onAbrirMesa(mesa) } }
             }
         }
@@ -146,20 +159,41 @@ private fun MesasContenido(estado: MesasUiState, onReintentar: () -> Unit, onAbr
 }
 
 @Composable
-private fun TarjetaMesaSalon(mesa: Mesa, onClick: () -> Unit) {
+private fun Indicador(etiqueta: String, valor: Int, modifier: Modifier = Modifier, destacado: Boolean = false) {
     val colores = MaterialTheme.colorScheme
     Surface(
-        onClick = onClick,
-        color = if (mesa.libre) colores.surface else colores.tertiaryContainer,
-        contentColor = if (mesa.libre) colores.onSurface else colores.onTertiaryContainer,
+        color = colores.surfaceContainerLowest,
         shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(Dimens.borde, if (mesa.libre) colores.outlineVariant else colores.tertiary),
+        border = BorderStroke(Dimens.borde, colores.outlineVariant),
+        modifier = modifier
+    ) {
+        Column(Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)) {
+            Text(etiqueta.uppercase(), style = MaterialTheme.typography.labelSmall, color = colores.onSurfaceVariant)
+            Text(
+                "$valor",
+                style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FuenteCifras),
+                fontWeight = FontWeight.Bold,
+                color = if (destacado) colores.tertiary else colores.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun TarjetaMesaSalon(mesa: Mesa, onClick: () -> Unit) {
+    val colores = MaterialTheme.colorScheme
+    // Rediseño uniforme: tarjeta blanca para todas; el estado lo dicen el borde y el chip (como en la web)
+    Surface(
+        onClick = onClick,
+        color = colores.surfaceContainerLowest,
+        contentColor = colores.onSurface,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(if (mesa.libre) Dimens.borde else Dimens.bordeDestacado, if (mesa.libre) colores.outlineVariant else colores.tertiary),
         modifier = Modifier.fillMaxWidth().aspectRatio(1f)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(Dimens.sm)
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.padding(Dimens.md)
         ) {
             Text(
                 "M${mesa.numero}",
@@ -167,7 +201,7 @@ private fun TarjetaMesaSalon(mesa: Mesa, onClick: () -> Unit) {
                 fontFamily = FuenteCifras,
                 fontWeight = FontWeight.Bold
             )
-            Text(if (mesa.libre) "Libre" else "Ocupada", style = MaterialTheme.typography.labelMedium)
+            ChipEstado(if (mesa.libre) "Libre" else "Ocupada", if (mesa.libre) Tono.Ok else Tono.Aviso)
         }
     }
 }

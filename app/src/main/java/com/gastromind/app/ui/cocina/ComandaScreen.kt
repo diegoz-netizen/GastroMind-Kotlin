@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -96,7 +97,7 @@ fun ComandaScreen(
                 onCerrarSesion = onCerrarSesion,
                 acciones = {
                     estado.ahora?.let {
-                        Text(it.hora(), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FuenteCifras), color = MaterialTheme.colorScheme.onSurface)
+                        Text(it.hora(), style = MaterialTheme.typography.titleMedium.copy(fontFamily = FuenteCifras), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = Dimens.sm))
                     }
                 }
             )
@@ -149,13 +150,24 @@ private fun TarjetaComanda(
         border = if (comanda.urgencia == Urgencia.NUEVA) BorderStroke(Dimens.bordeDestacado, colores.secondary) else null
     ) {
         Column {
+            // Encabezado del diseño móvil v3: cuadro con la mesa (verde, o ámbar si está demorada), número y tiempo
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().background(fondo).padding(horizontal = Dimens.md, vertical = Dimens.md)
             ) {
-                val nueva = if (comanda.urgencia == Urgencia.NUEVA) " · nueva" else ""
-                Text("M${comanda.mesaNumero}$nueva", style = MaterialTheme.typography.titleLarge, color = texto)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(Dimens.xxl + Dimens.sm)
+                        .background(if (comanda.urgencia == Urgencia.DEMORADA) colores.tertiary else colores.primary, MaterialTheme.shapes.small)
+                ) {
+                    Text("M${comanda.mesaNumero}", style = MaterialTheme.typography.titleSmall, color = colores.onPrimary)
+                }
+                Column(Modifier.weight(1f)) {
+                    val nueva = if (comanda.urgencia == Urgencia.NUEVA) " · nueva" else ""
+                    Text("Mesa ${comanda.mesaNumero}$nueva", style = MaterialTheme.typography.titleMedium, color = texto)
+                    Text("#${comanda.pedidoId}", style = MaterialTheme.typography.bodySmall, color = colores.onSurfaceVariant)
+                }
                 Text(
                     "${comanda.horaIngreso.hora()} · ${comanda.minutos} min",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FuenteCifras),

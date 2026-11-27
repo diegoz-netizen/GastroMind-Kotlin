@@ -115,3 +115,28 @@ fun AvatarIniciales(nombre: String, modifier: Modifier = Modifier) {
         )
     }
 }
+
+/** Tono de un chip de estado: el mismo código de color que la web (verde = bien, ámbar = aviso). */
+enum class Tono { Ok, Aviso, Neutro, Error }
+
+/** Chip de estado con punto de color, igual al de la web de Spring y el panel de Django (rediseño uniforme). */
+@Composable
+fun ChipEstado(texto: String, tono: Tono, modifier: Modifier = Modifier) {
+    val colores = MaterialTheme.colorScheme
+    val (fondo, frente) = when (tono) {
+        Tono.Ok -> colores.primaryContainer to colores.primary
+        Tono.Aviso -> colores.tertiaryContainer to colores.onTertiaryContainer
+        Tono.Neutro -> colores.surfaceVariant to colores.onSurfaceVariant
+        Tono.Error -> colores.errorContainer to colores.error
+    }
+    Surface(color = fondo, contentColor = frente, shape = CircleShape, modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = Dimens.sm, vertical = Dimens.xs)
+        ) {
+            Box(Modifier.size(Dimens.sm).background(frente, CircleShape))
+            Text(texto, style = MaterialTheme.typography.labelMedium, color = frente)
+        }
+    }
+}
