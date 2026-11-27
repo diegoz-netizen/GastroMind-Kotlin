@@ -3,6 +3,7 @@ package com.gastromind.app.ui.theme
 import androidx.compose.ui.unit.dp
 
 object Dimens {
+    val none = 0.dp
     val xs = 4.dp
     val sm = 8.dp
     val md = 12.dp

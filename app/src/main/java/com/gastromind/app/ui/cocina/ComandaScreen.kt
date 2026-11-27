@@ -1,5 +1,8 @@
 package com.gastromind.app.ui.cocina
 
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import com.gastromind.app.ui.components.ProgresoListos
+import com.gastromind.app.ui.components.InsigniaMesa
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -96,7 +100,7 @@ fun ComandaScreen(
                 onCerrarSesion = onCerrarSesion,
                 acciones = {
                     estado.ahora?.let {
-                        Text(it.hora(), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FuenteCifras), color = MaterialTheme.colorScheme.onSurface)
+                        Text(it.hora(), style = MaterialTheme.typography.titleMedium.copy(fontFamily = FuenteCifras), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = Dimens.sm))
                     }
                 }
             )
@@ -121,11 +125,38 @@ fun ComandaScreen(
                     horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    // Indicadores del v3: cuántas comandas hay y cuántas están demoradas
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                            IndicadorCocina("Comandas", estado.comandas.size, Modifier.weight(1f))
+                            IndicadorCocina("Demoradas", estado.comandas.count { it.urgencia == Urgencia.DEMORADA }, Modifier.weight(1f), aviso = true)
+                        }
+                    }
                     items(estado.comandas, key = { it.pedidoId }) { comanda ->
                         TarjetaComanda(comanda, estado.cambiando, onAvanzar, onAnular)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun IndicadorCocina(etiqueta: String, valor: Int, modifier: Modifier = Modifier, aviso: Boolean = false) {
+    val colores = MaterialTheme.colorScheme
+    Surface(
+        color = if (aviso && valor > 0) colores.tertiaryContainer else colores.surfaceContainerLowest,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(Dimens.borde, if (aviso && valor > 0) colores.tertiary else colores.outlineVariant),
+        modifier = modifier
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)
+        ) {
+            Text("$valor", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FuenteCifras), color = if (aviso && valor > 0) colores.onTertiaryContainer else colores.onSurface)
+            Text(etiqueta, style = MaterialTheme.typography.bodyMedium, color = colores.onSurfaceVariant)
         }
     }
 }
@@ -149,13 +180,19 @@ private fun TarjetaComanda(
         border = if (comanda.urgencia == Urgencia.NUEVA) BorderStroke(Dimens.bordeDestacado, colores.secondary) else null
     ) {
         Column {
+            // Encabezado del diseño móvil v3: cuadro con la mesa (verde, o ámbar si está demorada), número y tiempo
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().background(fondo).padding(horizontal = Dimens.md, vertical = Dimens.md)
             ) {
-                val nueva = if (comanda.urgencia == Urgencia.NUEVA) " · nueva" else ""
-                Text("M${comanda.mesaNumero}$nueva", style = MaterialTheme.typography.titleLarge, color = texto)
+                if (comanda.urgencia == Urgencia.DEMORADA) InsigniaMesa(comanda.mesaNumero, colores.tertiary, colores.onTertiary)
+                else InsigniaMesa(comanda.mesaNumero)
+                Column(Modifier.weight(1f)) {
+                    val nueva = if (comanda.urgencia == Urgencia.NUEVA) " · nueva" else ""
+                    Text("Mesa ${comanda.mesaNumero}$nueva", style = MaterialTheme.typography.titleMedium, color = texto)
+                    Text("#${comanda.pedidoId}", style = MaterialTheme.typography.bodySmall, color = colores.onSurfaceVariant)
+                }
                 Text(
                     "${comanda.horaIngreso.hora()} · ${comanda.minutos} min",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FuenteCifras),
@@ -170,6 +207,13 @@ private fun TarjetaComanda(
                     onAnular = { onAnular(comanda.pedidoId, comanda.mesaNumero, platillo) }
                 )
             }
+            // Pie del v3: cuántos platillos ya están listos
+            val activos = comanda.platillos.filter { it.estado != EstadoPlatillo.ANULADO }
+            ProgresoListos(
+                activos.count { it.estado == EstadoPlatillo.LISTO || it.estado == EstadoPlatillo.SERVIDO },
+                activos.size,
+                Modifier.padding(horizontal = Dimens.md, vertical = Dimens.md)
+            )
         }
     }
 }

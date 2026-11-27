@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -76,6 +77,21 @@ fun LoginScreen(
                     .padding(horizontal = Dimens.xl, vertical = Dimens.xxl)
             ) {
                 Marca(lema = "Personal del restaurante")
+                // Encabezado del diseño móvil v3: bienvenida y qué se hace en esta pantalla
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+                    Text(
+                        "BIENVENIDO",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text("Ingresa a tu turno", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        "Usa tu PIN de 4 dígitos o tu correo.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 when (state.modo) {
                     ModoIngreso.PIN -> IngresoConPin(state, onCorreo, onDigito, onBorrar, onNoSoyYo)
                     ModoIngreso.CORREO -> IngresoConCorreo(state, onCorreo, onPassword, onEntrarConCorreo)

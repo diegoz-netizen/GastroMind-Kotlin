@@ -1,5 +1,12 @@
 package com.gastromind.app.ui.almacen
 
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.ReceiptLong
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.Icons
+import com.gastromind.app.ui.components.Seccion
+import com.gastromind.app.ui.components.BarraInferior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +48,6 @@ import com.gastromind.app.ui.components.CampoSeleccion
 import com.gastromind.app.ui.components.CampoTexto
 import com.gastromind.app.ui.components.MensajeError
 import com.gastromind.app.ui.components.PantallaCarga
-import com.gastromind.app.ui.components.Pestanas
 import com.gastromind.app.ui.rol.InicioRolViewModel
 import com.gastromind.app.ui.theme.Dimens
 import com.gastromind.app.ui.theme.FuenteCifras
@@ -53,7 +59,12 @@ private const val PESTANA_INGRESO = 0
 private const val PESTANA_KARDEX = 1
 private const val PESTANA_CONTEO = 2
 private const val PESTANA_MERMA = 3
-private val PESTANAS = listOf("Ingreso", "Kardex", "Conteo", "Merma")
+private val SECCIONES = listOf(
+    Seccion("Ingreso", Icons.Outlined.Inventory2),
+    Seccion("Kardex", Icons.Outlined.ReceiptLong),
+    Seccion("Conteo", Icons.Outlined.Checklist),
+    Seccion("Merma", Icons.Outlined.DeleteOutline)
+)
 
 @Composable
 fun AlmacenRoute(
@@ -148,26 +159,27 @@ fun AlmacenScreen(
     Scaffold(
         topBar = { BarraSuperior(titulo = "Almacén", subtitulo = sesion.nombreCompleto, onCerrarSesion = onCerrarSesion) },
         bottomBar = {
-            if (formularioListo) {
-                Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.navigationBarsPadding().imePadding()) {
-                    Column {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        BotonPrincipal(
-                            texto = "Registrar ingreso",
-                            onClick = onRegistrar,
-                            cargando = estado.guardando,
-                            modifier = Modifier.padding(Dimens.lg)
-                        )
+            Column(Modifier.imePadding()) {
+                if (formularioListo) {
+                    Surface(color = MaterialTheme.colorScheme.surface) {
+                        Column {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            BotonPrincipal(
+                                texto = "Registrar ingreso",
+                                onClick = onRegistrar,
+                                cargando = estado.guardando,
+                                modifier = Modifier.padding(Dimens.lg)
+                            )
+                        }
                     }
                 }
+                // Diseño móvil v3: las secciones del almacén van en la barra inferior
+                BarraInferior(SECCIONES, pestana, onPestana)
             }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            Surface(color = MaterialTheme.colorScheme.surface) {
-                Pestanas(PESTANAS, pestana, onPestana, Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm))
-            }
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 when (pestana) {
                     PESTANA_INGRESO -> IngresoCompra(

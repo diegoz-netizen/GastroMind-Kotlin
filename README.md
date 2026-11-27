@@ -90,12 +90,12 @@ Sale del **prototipo final** del equipo (Figma, 27/10). Está todo en `ui/theme`
 |---|---|
 | Personalidad | Herramienta de trabajo: sobria, legible de lejos, botones grandes (se usa con prisa y a veces con guantes) |
 | Color principal | Verde cocina `#1D5B47`, contenedor `#DCEBE4` |
-| Fondo y superficies | Papel claro `#F3F4F1` y blanco; texto `#18201C` |
+| Fondo y superficies | Gris frío `#F4F6F5` y tarjetas blancas; texto `#18201C` |
 | Avisos | Ámbar `#C98A1E` / `#FBF1DE` (estados, "en construcción") · error `#B42318` / `#FBEAE8` |
 | Formas | Esquinas sutiles: 8 / 12 / 16 dp |
 | Tipografía | Fuente del sistema; **cifras en monoespaciada** (PIN, cantidades, montos), como el prototipo |
 | Imágenes | Íconos del dominio por rol; el personal se muestra con sus iniciales (no hay fotos) |
-| Tema | Claro y sin color dinámico. La cocina usa el esquema oscuro del KDS (`GastroMindCocinaTheme`) con los mismos roles de color |
+| Tema | Claro y sin color dinámico. La cocina usa `GastroMindCocinaTheme`, también claro (diseño móvil v3): verde = listo, ámbar = preparando o demorada |
 
 En las pantallas: `MaterialTheme.colorScheme.*`, `MaterialTheme.typography.*`, `MaterialTheme.shapes.*` y `Dimens.*`. Si dos pantallas dibujan lo mismo, va a `ui/components`.
 
